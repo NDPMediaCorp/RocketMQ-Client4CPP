@@ -1,4 +1,4 @@
-RocketMQ C++ Client
+[RocketMQ](https://github.com/alibaba/RocketMQ) C++ Client
 ===================
 
 ### 主要贡献者
