@@ -15,6 +15,9 @@
 */
 
 #include "SocketUtil.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
 #include <sstream>
 
 int SocketInit()
@@ -96,15 +99,8 @@ std::string socketAddress2String(sockaddr addr)
 {
 	sockaddr_in in;
 	memcpy(&in,&addr,sizeof(sockaddr));
-	std::stringstream ss;
 
-	ss<<int(in.sin_addr.s_net)<<"."
-	  <<int(in.sin_addr.s_host)<<"."
-	  <<int(in.sin_addr.s_lh)<<"."
-	  <<int(in.sin_addr.s_impno)<<":"
-	  << ntohs(in.sin_port);
-
-	return ss.str();
+	return inet_ntoa(in.sin_addr);
 }
 
 std::string getLocalAddress()
@@ -118,7 +114,7 @@ std::string getHostName(sockaddr addr)
 	sockaddr_in in;
 	memcpy(&in,&addr,sizeof(sockaddr));
 	
-	struct hostent *remoteHost = gethostbyaddr((char *) &(in.sin_addr), 4, AF_INET);
+	struct hostent *remoteHost = gethostbyaddr((char*) &(in.sin_addr), 4, AF_INET);
 	char** alias = remoteHost->h_aliases;
 	if (*alias!=0)
 	{
@@ -126,13 +122,6 @@ std::string getHostName(sockaddr addr)
 	}
 	else
 	{
-		std::stringstream ss;
-
-		ss<<int(in.sin_addr.s_net)<<"."
-			<<int(in.sin_addr.s_host)<<"."
-			<<int(in.sin_addr.s_lh)<<"."
-			<<int(in.sin_addr.s_impno);
-
-		return ss.str();
+		return inet_ntoa(in.sin_addr);
 	}
 }

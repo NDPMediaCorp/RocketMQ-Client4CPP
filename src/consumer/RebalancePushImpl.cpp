@@ -15,6 +15,10 @@
 */
 
 #include "RebalancePushImpl.h"
+
+#include <string.h>
+#include <limits.h>
+
 #include "DefaultMQPushConsumerImpl.h"
 #include "AllocateMessageQueueStrategy.h"
 #include "MQClientFactory.h"
@@ -76,7 +80,7 @@ long long RebalancePushImpl::computePullFromWhere(MessageQueue& mq)
 				// 正常队列则从末尾开始
 				else
 				{
-					result = long long ((unsigned long long (-1))/2);
+					result = LLONG_MAX;
 				}
 			}
 			// 发生其他错误
@@ -107,7 +111,7 @@ long long RebalancePushImpl::computePullFromWhere(MessageQueue& mq)
 			break;
 		}
 	case CONSUME_FROM_MAX_OFFSET:
-		result = long long ((unsigned long long (-1))/2);
+		result = LLONG_MAX;
 		break;
 	case CONSUME_FROM_MIN_OFFSET:
 		result = 0L;

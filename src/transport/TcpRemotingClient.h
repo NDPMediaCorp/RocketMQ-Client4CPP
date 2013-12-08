@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include <list>
+#include "SocketUtil.h"
 #include "RemotingCommand.h"
 #include "Thread.h"
 #include "ThreadPool.h"

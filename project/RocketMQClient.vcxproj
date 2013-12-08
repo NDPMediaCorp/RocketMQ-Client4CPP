@@ -27,14 +27,14 @@
     <ClCompile Include="..\src\consumer\ConsumeMessageOrderlyService.cpp" />
     <ClCompile Include="..\src\consumer\ConsumerInvokeCallback.cpp" />
     <ClCompile Include="..\src\consumer\DefaultMQPullConsumer.cpp" />
-    <ClCompile Include="..\src\consumer\DefaultMQPullConsumerImpl .cpp" />
+    <ClCompile Include="..\src\consumer\DefaultMQPullConsumerImpl.cpp" />
     <ClCompile Include="..\src\consumer\DefaultMQPushConsumer.cpp" />
-    <ClCompile Include="..\src\consumer\DefaultMQPushConsumerImpl .cpp" />
+    <ClCompile Include="..\src\consumer\DefaultMQPushConsumerImpl.cpp" />
     <ClCompile Include="..\src\consumer\LocalFileOffsetStore.cpp" />
     <ClCompile Include="..\src\consumer\ProcessQueue.cpp" />
     <ClCompile Include="..\src\consumer\PullAPIWrapper.cpp" />
     <ClCompile Include="..\src\consumer\PullMessageService.cpp" />
-    <ClCompile Include="..\src\consumer\PullRequest .cpp" />
+    <ClCompile Include="..\src\consumer\PullRequest.cpp" />
     <ClCompile Include="..\src\consumer\RebalanceImpl.cpp" />
     <ClCompile Include="..\src\consumer\RebalancePullImpl.cpp" />
     <ClCompile Include="..\src\consumer\RebalancePushImpl.cpp" />

@@ -110,14 +110,14 @@ public:
 	AtomicValue<T>& operator=(T newValue)
 	{
 		Set(newValue);
-		return Get();
+		return *this;
 	}
 
 	AtomicValue<T>& operator=(const AtomicValue<T>& v)
 	{
 		Set(v.Get());
 
-		return Get();
+		return *this;
 	}
 
 	inline T operator+=(T n)

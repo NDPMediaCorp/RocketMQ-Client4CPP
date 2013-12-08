@@ -16,11 +16,11 @@
 
 #include "MQClientFactory.h"
 
+#include <math.h>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "ScopedLock.h"
 #include "RemoteClientConfig.h"
 #include "ClientRemotingProcessor.h"
 #include "MQClientAPIImpl.h"
@@ -192,7 +192,7 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 							QueueData data = *it;
 							// 读写分区个数是一致，故只做一次判断
 							int queueNums =
-								min(pDefaultMQProducer->getDefaultTopicQueueNums(),
+								std::min<int>(pDefaultMQProducer->getDefaultTopicQueueNums(),
 									data.readQueueNums);
 							data.readQueueNums = (queueNums);
 							data.writeQueueNums = (queueNums);

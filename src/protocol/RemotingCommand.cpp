@@ -19,7 +19,7 @@
 #include <sstream>
 #include <string>
 #include <stdlib.h>
-
+#include <string.h>
 #include <json/json.h>
 
 #include "SocketUtil.h"
@@ -206,7 +206,7 @@ void RemotingCommand::markOnewayRPC()
 	m_flag |= bits;
 }
 
-boolean RemotingCommand::isOnewayRPC()
+bool RemotingCommand::isOnewayRPC()
 {
 	int bits = 1 << RPC_ONEWAY;
 	return (m_flag & bits) == bits;

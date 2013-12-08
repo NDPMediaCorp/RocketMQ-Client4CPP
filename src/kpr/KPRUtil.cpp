@@ -15,6 +15,8 @@
  */
 #include "KPRUtil.h"
 
+#include <assert.h>
+
 unsigned long long GetCurrentTimeMillis()
 {
 #ifdef WIN32

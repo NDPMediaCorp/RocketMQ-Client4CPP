@@ -252,7 +252,7 @@ namespace kpr
 		}
 #else
 		unsigned int count = mutex.reset4Condvar();
-		pthread_mutex_unlock(&mutex.m_lock);
+		pthread_mutex_unlock(&mutex.m_mutex);
 		mutex.lock(count);
 		int ret = 0;
 		if (timeout < 0)

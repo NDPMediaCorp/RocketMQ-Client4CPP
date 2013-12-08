@@ -15,6 +15,10 @@
  */
 #include "ThreadLocal.h"
 
+#include <errno.h>
+
+#include "Exception.h"
+
 namespace kpr
 {
 	ThreadLocal::ThreadLocal()
@@ -25,10 +29,10 @@ namespace kpr
 #else
 		int retcode = 0;
 
-		retcode = pthread_key_create(&m_Key, KeyDestructor);
+		retcode = pthread_key_create(&m_Key, 0);
 		if(retcode != 0)
 		{
-			THROW_EXCEPTION(KPR_SYSTEM_CALL,"pthread_key_create error",errno);
+			THROW_EXCEPTION(SystemCallException,"pthread_key_create error",errno);
 		}
 #endif
 	}
@@ -61,7 +65,7 @@ namespace kpr
 		int retcode = pthread_setspecific(m_Key, value);
 		if(retcode != 0)
 		{
-			THROW_EXCEPTION(KPR_SYSTEM_CALL,"pthread_setspecific error",errno);
+			THROW_EXCEPTION(SystemCallException,"pthread_setspecific error",errno);
 		}
 #endif
 	}

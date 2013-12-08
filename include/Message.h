@@ -71,7 +71,7 @@ public:
 	int getBodyLen()const;
 	void setBody(const char* body,int len);
 
-	std::map<std::string, std::string> getProperties();
+	std::map<std::string, std::string>& getProperties();
 	void setProperties(std::map<std::string, std::string>& properties);
 
 protected:

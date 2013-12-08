@@ -17,7 +17,6 @@
 #include "CommandCustomHeader.h"
 #include <sstream>
 #include <cstdlib>
-#include <cstdint>
 
 #include "RemotingCommand.h"
 #include "MQProtos.h"

@@ -17,6 +17,8 @@
 #include "VirtualEnvUtil.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+
 #include "UtilAll.h"
 
 const char* VirtualEnvUtil::VIRTUAL_APPGROUP_PREFIX = "%%PROJECT_%s%%";

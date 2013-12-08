@@ -27,6 +27,7 @@
 #else
 #   include <unistd.h>
 #   include <sys/types.h>
+#   include <signal.h>
 #endif
 
 #include "ScopedLock.h"
@@ -39,7 +40,7 @@ namespace kpr
 #ifdef WIN32
 	unsigned __stdcall Thread::ThreadRoute(void* pArg)
 #else
-	void* Thread::ThreadRoute(void* pArg);
+	void* Thread::ThreadRoute(void* pArg)
 #endif
 	{
 		Thread_var tv = Duplicate((Thread*)pArg);
@@ -141,10 +142,10 @@ namespace kpr
 #else
 		pthread_attr_t attr;
 		int retcode = 0;
-		retcode = pthread_attr_init(&m_threadAttr);
+		retcode = pthread_attr_init(&attr);
 		if(retcode != 0)
 		{
-			THROW_EXCEPTION(SystemCallException,msg,errno)
+			THROW_EXCEPTION(SystemCallException,"pthread_attr_init failed!",errno)
 		}
 
 		pthread_t id;
@@ -202,7 +203,7 @@ namespace kpr
 #else
 		struct timespec tv;
 		tv.tv_sec = millis / 1000;
-		tv.tv_nsec = (millis % 1000) * 1000000 + nano;
+		tv.tv_nsec = (millis % 1000) * 1000000 + nanos;
 		nanosleep(&tv, 0);
 #endif
 	}

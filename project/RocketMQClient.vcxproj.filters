@@ -27,10 +27,10 @@
     <ClCompile Include="..\src\consumer\DefaultMQPushConsumer.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\consumer\DefaultMQPullConsumerImpl .cpp">
+    <ClCompile Include="..\src\consumer\DefaultMQPullConsumerImpl.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\consumer\DefaultMQPushConsumerImpl .cpp">
+    <ClCompile Include="..\src\consumer\DefaultMQPushConsumerImpl.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
     <ClCompile Include="..\src\consumer\SubscriptionData.cpp">
@@ -39,7 +39,7 @@
     <ClCompile Include="..\src\consumer\ProcessQueue.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\consumer\PullRequest .cpp">
+    <ClCompile Include="..\src\consumer\PullRequest.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
     <ClCompile Include="..\src\kpr\Mutex.cpp">

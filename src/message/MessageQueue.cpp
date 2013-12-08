@@ -16,6 +16,7 @@
 
 #include "MessageQueue.h"
 
+#include <string.h>
 #include <string>
 
 MessageQueue::MessageQueue()

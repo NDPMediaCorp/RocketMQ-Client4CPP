@@ -111,7 +111,7 @@ public:
 	void markResponseType();
 	bool isResponseType() ;
 	void markOnewayRPC();
-	boolean isOnewayRPC();
+	bool isOnewayRPC();
 
 	static void setCmdVersion(RemotingCommand* pCmd);
 	static RemotingCommand* CreateRemotingCommand(const char* pData,int len);

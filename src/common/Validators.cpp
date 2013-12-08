@@ -16,6 +16,7 @@
 #include "Validators.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "MQClientException.h"
 #include "UtilAll.h"

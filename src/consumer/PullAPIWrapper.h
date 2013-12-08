@@ -49,7 +49,7 @@ public:
 	*            虚拟环境projectGroupPrefix，不存在可设置为 null
 	* @return
 	*/
-	PullResult processPullResult(MessageQueue& mq, 
+	PullResult& processPullResult(MessageQueue& mq, 
 		PullResult& pullResult,
 		SubscriptionData& subscriptionData);
 

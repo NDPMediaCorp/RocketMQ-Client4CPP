@@ -20,6 +20,7 @@
 #include <string>
 #include <list>
 #include "Mutex.h"
+#include "SocketUtil.h"
 
 const int CLIENT_STATE_UNINIT = 0;
 const int CLIENT_STATE_INITED = 1;

@@ -177,7 +177,7 @@ void TcpRemotingClient::UpdateEvent()
 
 void TcpRemotingClient::Run()
 {
-	FD_SET rset, xset;
+	fd_set rset, xset;
 	unsigned long long beginTime = GetCurrentTimeMillis();
 
 	do

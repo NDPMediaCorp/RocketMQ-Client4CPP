@@ -21,6 +21,8 @@
 #   include <sys/time.h>
 #endif
 
+#include "KPRUtil.h"
+
 namespace kpr
 {
 	Semaphore::Semaphore(long initial_count)

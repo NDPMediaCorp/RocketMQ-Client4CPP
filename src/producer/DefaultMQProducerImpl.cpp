@@ -108,7 +108,7 @@ void DefaultMQProducerImpl::start(bool startFactory)
 
 		m_pMQClientFactory = MQClientManager::getInstance()->getAndCreateMQClientFactory(*m_pDefaultMQProducer);
 
-		boolean registerOK = m_pMQClientFactory->registerProducer(m_pDefaultMQProducer->getProducerGroup(), this);
+		bool registerOK = m_pMQClientFactory->registerProducer(m_pDefaultMQProducer->getProducerGroup(), this);
 		if (!registerOK)
 		{
 			m_serviceState = CREATE_JUST;

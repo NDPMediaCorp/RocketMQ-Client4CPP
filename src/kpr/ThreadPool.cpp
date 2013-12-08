@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 #include "ThreadPool.h"
+
+#include <stdio.h>
+
 #include "ScopedLock.h"
 #include "KPRUtil.h"
 

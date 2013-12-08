@@ -234,7 +234,7 @@ void Message::setBody(const char* body,int len)
 	}
 }
 
-std::map<std::string, std::string> Message::getProperties()
+std::map<std::string, std::string>& Message::getProperties()
 {
 	return m_properties;
 }

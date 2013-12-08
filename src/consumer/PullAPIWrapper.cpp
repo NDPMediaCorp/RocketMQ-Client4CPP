@@ -53,7 +53,7 @@ void  PullAPIWrapper::updatePullFromWhichNode(MessageQueue& mq, long brokerId)
 	}
 }
 
-PullResult  PullAPIWrapper::processPullResult(MessageQueue& mq, 
+PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq, 
 	PullResult& pullResult,
 	SubscriptionData& subscriptionData) 
 {
