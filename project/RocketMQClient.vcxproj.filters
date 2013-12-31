@@ -158,6 +158,12 @@
     <ClCompile Include="..\src\common\SendResult.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\kpr\TimerTaskManager.cpp">
+      <Filter>kpr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\kpr\TimerThread.cpp">
+      <Filter>kpr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\producer\LocalTransactionExecuter.h">
@@ -484,6 +490,12 @@
     </ClInclude>
     <ClInclude Include="..\src\protocol\KVTable.h">
       <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\kpr\TimerTaskManager.h">
+      <Filter>kpr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\kpr\TimerThread.h">
+      <Filter>kpr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

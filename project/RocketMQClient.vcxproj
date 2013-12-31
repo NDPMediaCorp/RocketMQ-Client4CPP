@@ -51,6 +51,8 @@
     <ClCompile Include="..\src\kpr\Thread.cpp" />
     <ClCompile Include="..\src\kpr\ThreadLocal.cpp" />
     <ClCompile Include="..\src\kpr\ThreadPool.cpp" />
+    <ClCompile Include="..\src\kpr\TimerTaskManager.cpp" />
+    <ClCompile Include="..\src\kpr\TimerThread.cpp" />
     <ClCompile Include="..\src\message\Message.cpp" />
     <ClCompile Include="..\src\message\MessageDecoder.cpp" />
     <ClCompile Include="..\src\message\MessageExt.cpp" />
@@ -154,6 +156,8 @@
     <ClInclude Include="..\src\kpr\ThreadLocal.h" />
     <ClInclude Include="..\src\kpr\ThreadPool.h" />
     <ClInclude Include="..\src\kpr\ThreadPoolWork.h" />
+    <ClInclude Include="..\src\kpr\TimerTaskManager.h" />
+    <ClInclude Include="..\src\kpr\TimerThread.h" />
     <ClInclude Include="..\src\message\MessageDecoder.h" />
     <ClInclude Include="..\src\message\MessageId.h" />
     <ClInclude Include="..\src\MQAdminImpl.h" />
