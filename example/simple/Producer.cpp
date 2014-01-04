@@ -13,8 +13,21 @@
 
 int main(int argc, char* argv[])
 {
+	if (argc<2)
+	{
+		printf("Usage:%s ip:port\n",argv[0]);
+		return 0;
+	}
+
+	int count = 1000;
+
+	if (argc>2)
+	{
+		count = atoi(argv[2]);
+	}
+
 	DefaultMQProducer producer("please_rename_unique_group_name");
-	producer.setNamesrvAddr("192.168.0.104:9876");
+	producer.setNamesrvAddr(argv[1]);
 	producer.start();
 
 	std::string tags[] = { "TagA", "TagB", "TagC", "TagD", "TagE" };
@@ -22,7 +35,7 @@ int main(int argc, char* argv[])
 	char key[8];
 	char value[32];
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < count; i++) {
 		try
 		{
 			sprintf(key,"KEY%d",i);
