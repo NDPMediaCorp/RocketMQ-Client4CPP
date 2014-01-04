@@ -20,8 +20,38 @@
 #include <map>
 
 #include "TimerThread.h"
+#include "ThreadPoolWork.h"
 
-class ThreadPoolWork;
+class TimerTask : public ThreadPoolWork
+{
+public:
+	TimerTask()
+		:m_isProcessing(false)
+	{
+
+	}
+
+	virtual void Do()
+	{
+		DoTask();
+		m_isProcessing = false;
+	}
+
+	bool IsProcessing()
+	{
+		return m_isProcessing;
+	}
+
+	void SetProcessing(bool isProcessing)
+	{
+		m_isProcessing = isProcessing;
+	}
+
+	virtual void DoTask()=0;
+
+private:
+	bool m_isProcessing;
+};
 
 namespace kpr
 {
@@ -34,7 +64,7 @@ namespace kpr
 		virtual ~TimerTaskManager();
 
 		int Init(int maxThreadCount, int checklnteval);
-		unsigned int RegisterTimer(unsigned int elapse, ThreadPoolWork* pHandler);
+		unsigned int RegisterTimer(unsigned int initialDelay, unsigned int elapse, TimerTask* pHandler);
 		bool UnRegisterTimer(unsigned int timerId);
 		bool ResetTimer(unsigned int timerId);
 		void Close();
@@ -42,7 +72,7 @@ namespace kpr
 		virtual void OnTimeOut(unsigned int timerId);
 
 	private:
-		std::map<unsigned int, ThreadPoolWork*> m_timerTasks;
+		std::map<unsigned int, TimerTask*> m_timerTasks;
 		kpr::Mutex m_mutex;
 		unsigned int m_checklnterval;
 

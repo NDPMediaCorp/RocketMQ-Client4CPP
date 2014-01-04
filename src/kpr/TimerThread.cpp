@@ -80,11 +80,11 @@ namespace kpr
 		Notify();
 	}
 
-	unsigned int TimerThread::RegisterTimer(unsigned int elapse, TimerHandler *pHandler, bool persistent)
+	unsigned int TimerThread::RegisterTimer(unsigned int initialDelay,unsigned int elapse, TimerHandler *pHandler, bool persistent)
 	{
 		TimerInfo info;
 		info.elapse = elapse;
-		info.outTime = 0;
+		info.outTime = 0-initialDelay;
 		info.pTimerHandler = pHandler;
 		info.persistent = persistent;
 
@@ -146,7 +146,7 @@ namespace kpr
 			{
 				it->second.outTime += elapse;
 
-				if (it->second.outTime >= it->second.elapse)
+				if (it->second.outTime >= int(it->second.elapse))
 				{
 					timerList.push_back(it->second);
 

@@ -15,7 +15,6 @@
 */
 #include "TimerTaskManager.h"
 #include "ThreadPool.h"
-#include "ThreadPoolWork.h"
 #include "ScopedLock.h"
 
 namespace kpr
@@ -47,9 +46,9 @@ namespace kpr
 		return 0;
 	}
 
-	unsigned int TimerTaskManager::RegisterTimer(unsigned int elapse, ThreadPoolWork* pHandler)
+	unsigned int TimerTaskManager::RegisterTimer(unsigned int initialDelay, unsigned int elapse, TimerTask* pHandler)
 	{
-		unsigned int id = m_timerThread->RegisterTimer(elapse,this);
+		unsigned int id = m_timerThread->RegisterTimer(initialDelay, elapse,this);
 
 		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
 		m_timerTasks[id] = pHandler;
@@ -75,10 +74,14 @@ namespace kpr
 	void TimerTaskManager::OnTimeOut(unsigned int timerId)
 	{
 		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
-		std::map<unsigned int, ThreadPoolWork*>::iterator it = m_timerTasks.find(timerId);
+		std::map<unsigned int, TimerTask*>::iterator it = m_timerTasks.find(timerId);
 		if (it != m_timerTasks.end())
 		{
-			m_pThreadPool->AddWork(it->second);
+			if(!it->second->IsProcessing())
+			{
+				it->second->SetProcessing(true);
+				m_pThreadPool->AddWork(it->second);
+			}
 		}
 	}
 

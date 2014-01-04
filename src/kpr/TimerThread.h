@@ -43,7 +43,7 @@ namespace kpr
 	{
 		unsigned int id;
 		unsigned int elapse; 
-		unsigned int outTime;
+		int outTime;// 初始化可以为负数，这样就可以延迟启动了
 		bool persistent;
 		TimerHandler* pTimerHandler;
 	}TimerInfo;
@@ -56,7 +56,7 @@ namespace kpr
 		virtual void Run();
 		virtual void Close();
 
-		virtual unsigned int RegisterTimer(unsigned int elapse, TimerHandler *pHandler, bool persistent = true);
+		virtual unsigned int RegisterTimer(unsigned int initialDelay, unsigned int elapse, TimerHandler *pHandler, bool persistent = true);
 		virtual bool UnRegisterTimer(unsigned int timerId);
 		virtual bool ResetTimer(unsigned int timerId);
 
