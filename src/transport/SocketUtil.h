@@ -19,6 +19,7 @@
 #ifdef WIN32
 #include <Winsock2.h>
 #include <Windows.h>
+#include <WS2tcpip.h>
 
 #define NET_ERROR WSAGetLastError()
 #define socklen_t int
