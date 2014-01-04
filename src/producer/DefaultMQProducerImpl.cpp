@@ -267,7 +267,7 @@ QueryResult DefaultMQProducerImpl::queryMessage(const std::string& topic, const 
 
 SendResult DefaultMQProducerImpl::send(Message& msg)
 {
-	return sendDefaultImpl(msg, SYNC, NULL);;
+	return sendDefaultImpl(msg, SYNC, NULL);
 }
 
 void DefaultMQProducerImpl::send(Message& msg, SendCallback* pSendCallback)
@@ -518,7 +518,7 @@ SendResult DefaultMQProducerImpl::sendDefaultImpl(Message& msg,
 
 	THROW_MQEXCEPTION(MQClientException,"No route info of this topic, ",-1);
 
-	return sendResult;;
+	return sendResult;
 }
 
 SendResult DefaultMQProducerImpl::sendKernelImpl(Message& msg,

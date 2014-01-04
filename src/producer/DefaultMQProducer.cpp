@@ -96,7 +96,7 @@ void DefaultMQProducer::sendOneway(Message& msg, MessageQueue& mq)
 SendResult DefaultMQProducer::send(Message& msg, MessageQueueSelector* pSelector, void* arg)
 {
 
-	return m_pDefaultMQProducerImpl->send(msg,pSelector,arg);;
+	return m_pDefaultMQProducerImpl->send(msg,pSelector,arg);
 }
 
 void DefaultMQProducer::send(Message& msg,

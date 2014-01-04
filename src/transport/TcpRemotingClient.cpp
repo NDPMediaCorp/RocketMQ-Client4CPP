@@ -187,7 +187,7 @@ void TcpRemotingClient::Run()
 			FD_ZERO (&rset);
 			FD_ZERO (&xset);
 			{
-				kpr::ScopedLock<kpr::Mutex> lock(m_mutex);;
+				kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
 
 				rset = m_rset;
 				xset = m_rset;
