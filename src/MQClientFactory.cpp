@@ -65,7 +65,33 @@ MQClientFactory::MQClientFactory(ClientConfig& clientConfig, int factoryIndex, c
 	m_pDefaultMQProducer = new DefaultMQProducer(MixAll::CLIENT_INNER_PRODUCER_GROUP);
 	m_pDefaultMQProducer->resetClientConfig(clientConfig);
 	m_bootTimestamp = GetCurrentTimeMillis();
+
+	m_pFetchNameServerAddr = new ScheduledTask(this,&MQClientFactory::fetchNameServerAddr);
+	m_pUpdateTopicRouteInfoFromNameServerTask = 
+		new ScheduledTask(this,&MQClientFactory::updateTopicRouteInfoFromNameServerTask);
+	m_pCleanBroker = new ScheduledTask(this,&MQClientFactory::cleanBroker);
+	m_pPersistAllConsumerOffsetTask = new ScheduledTask(this,&MQClientFactory::persistAllConsumerOffsetTask);
+	m_pRecordSnapshotPeriodicallyTask = new ScheduledTask(this,&MQClientFactory::recordSnapshotPeriodicallyTask);
+	m_pLogStatsPeriodicallyTask = new ScheduledTask(this,&MQClientFactory::logStatsPeriodicallyTask);
+
 	m_serviceState = CREATE_JUST;
+}
+
+MQClientFactory::~MQClientFactory()
+{
+	delete m_pRemoteClientConfig;
+	delete m_pClientRemotingProcessor;
+	delete m_pMQClientAPIImpl;
+	delete m_pMQAdminImpl;
+	delete m_pPullMessageService;
+	delete m_pRebalanceService;
+	delete m_pDefaultMQProducer;
+	delete m_pFetchNameServerAddr;
+	delete m_pUpdateTopicRouteInfoFromNameServerTask;
+	delete m_pCleanBroker;
+	delete m_pPersistAllConsumerOffsetTask;
+	delete m_pRecordSnapshotPeriodicallyTask;
+	delete m_pLogStatsPeriodicallyTask;
 }
 
 void MQClientFactory::start()
@@ -83,11 +109,13 @@ void MQClientFactory::start()
 		}
 
 		m_pMQClientAPIImpl->start();
+		m_timerTaskManager.Init(5,1000);
 		startScheduledTask();
 		m_pPullMessageService->Start();
 		m_pRebalanceService->Start();
 
 		m_pDefaultMQProducer->getDefaultMQProducerImpl()->start(false);
+		
 
 		m_serviceState = RUNNING;
 		break;
@@ -429,18 +457,24 @@ void MQClientFactory::shutdown()
 		case RUNNING:
 			m_pDefaultMQProducer->getDefaultMQProducerImpl()->shutdown(false);
 
-			m_serviceState = SHUTDOWN_ALREADY;
+			for (int i=0;i<6;i++)
+			{
+				m_timerTaskManager.UnRegisterTimer(m_scheduledTaskIds[i]);
+			}
+
+			m_timerTaskManager.Close();
+			
 			m_pPullMessageService->stop();
 			m_pPullMessageService->Join();
 			
 			m_pMQClientAPIImpl->shutdown();
 			m_pRebalanceService->stop();
 			m_pRebalanceService->Join();
-
+			
 			closesocket(m_datagramSocket);
 
 			MQClientManager::getInstance()->removeClientFactory(m_clientId);
-
+			m_serviceState = SHUTDOWN_ALREADY;
 			break;
 		case SHUTDOWN_ALREADY:
 			break;
@@ -805,9 +839,7 @@ void MQClientFactory::makesureInstanceNameIsOnly(const std::string& instanceName
 	//TODO
 }
 
-//TODO 需要的定时执行函数
-#if 0
-void fetchNameServerAddr()
+void MQClientFactory::fetchNameServerAddr()
 {
 	if (m_clientConfig.getNamesrvAddr().empty())
 	{
@@ -822,7 +854,7 @@ void fetchNameServerAddr()
 	}
 }
 
-void updateTopicRouteInfoFromNameServerTask()
+void MQClientFactory::updateTopicRouteInfoFromNameServerTask()
 {
 	//10, m_clientConfig.getPollNameServerInteval()
 	try
@@ -835,7 +867,7 @@ void updateTopicRouteInfoFromNameServerTask()
 	}
 }
 
-void cleanBroker()
+void MQClientFactory::cleanBroker()
 {
 	//1000, m_clientConfig.getHeartbeatBrokerInterval()
 	try
@@ -849,7 +881,7 @@ void cleanBroker()
 	}
 }
 
-void persistAllConsumerOffsetTask()
+void MQClientFactory::persistAllConsumerOffsetTask()
 {
 	//1000 * 10, m_clientConfig.getPersistConsumerOffsetInterval()
 	try
@@ -862,7 +894,7 @@ void persistAllConsumerOffsetTask()
 	}
 }
 
-void recordSnapshotPeriodicallyTask()
+void MQClientFactory::recordSnapshotPeriodicallyTask()
 {
 	// 1000 * 10, 1000,
 	try
@@ -875,7 +907,7 @@ void recordSnapshotPeriodicallyTask()
 	}
 }
 
-void logStatsPeriodically()
+void MQClientFactory::logStatsPeriodicallyTask()
 {
 	//  1000 * 10, 1000 * 60
 	try
@@ -887,24 +919,25 @@ void logStatsPeriodically()
 
 	}
 }
-#endif
 
 void MQClientFactory::startScheduledTask()
 {
 	// 定时获取Name Server地址
-
+	m_scheduledTaskIds[0] = m_timerTaskManager.RegisterTimer(1000 * 10, 1000 * 60 * 2,m_pFetchNameServerAddr);
 
 	// 定时从Name Server获取Topic路由信息
-
+	m_scheduledTaskIds[1] = m_timerTaskManager.RegisterTimer(10, m_clientConfig.getPollNameServerInteval(),m_pUpdateTopicRouteInfoFromNameServerTask);
 
 	// 定时清理下线的Broker
 	// 向所有Broker发送心跳信息（包含订阅关系等）
-
+	m_scheduledTaskIds[2] = m_timerTaskManager.RegisterTimer(1000, m_clientConfig.getHeartbeatBrokerInterval(),m_pCleanBroker);
 
 	// 定时持久化Consumer消费进度（广播存储到本地，集群存储到Broker）
-
+	m_scheduledTaskIds[3] = m_timerTaskManager.RegisterTimer(1000 * 10, m_clientConfig.getPersistConsumerOffsetInterval(),m_pPersistAllConsumerOffsetTask);
 
 	// 统计信息打点
+	m_scheduledTaskIds[4] = m_timerTaskManager.RegisterTimer(1000 * 10, 1000,m_pRecordSnapshotPeriodicallyTask);
+	m_scheduledTaskIds[5] = m_timerTaskManager.RegisterTimer(1000 * 10, 1000 * 60,m_pLogStatsPeriodicallyTask);
 }
 
 void MQClientFactory::cleanOfflineBroker()
@@ -1102,7 +1135,7 @@ void MQClientFactory::unregisterClient(const std::string& producerGroup, const s
 	{
 		std::map<int, std::string>::iterator it1 = it->second.begin();
 
-		for (; it1!=it->second.end();)
+		for (; it1!=it->second.end();it1++)
 		{
 			std::string& addr = it1->second;
 

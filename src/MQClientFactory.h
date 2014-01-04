@@ -27,6 +27,7 @@
 #include "ClientConfig.h"
 #include "Mutex.h"
 #include "ServiceState.h"
+#include "TimerTaskManager.h"
 
 class ClientConfig;
 class MessageQueue;
@@ -53,6 +54,7 @@ class MQClientFactory
 {
 public:
 	MQClientFactory(ClientConfig& clientConfig, int factoryIndex, const std::string& clientId);
+	~MQClientFactory();
 
 	void start();
 	void shutdown();
@@ -137,6 +139,35 @@ private:
 	bool isNeedUpdateTopicRouteInfo(const std::string& topic);
 	void unregisterClientWithLock(const std::string& producerGroup, const std::string& consumerGroup);
 	void unregisterClient(const std::string& producerGroup, const std::string& consumerGroup);
+	
+	typedef void (MQClientFactory::*pScheduledFunc)();
+
+	class ScheduledTask : public TimerTask
+	{
+	public:
+		ScheduledTask(MQClientFactory* pMQClientFactory, pScheduledFunc pScheduled)
+			:m_pMQClientFactory(pMQClientFactory),m_pScheduled(pScheduled)
+		{
+
+		}
+
+		virtual void DoTask()
+		{
+			(m_pMQClientFactory->*m_pScheduled)();
+		}
+
+	private:
+		MQClientFactory* m_pMQClientFactory;
+		pScheduledFunc m_pScheduled;
+	};
+
+	//定时任务
+	void fetchNameServerAddr();
+	void updateTopicRouteInfoFromNameServerTask();
+	void cleanBroker();
+	void persistAllConsumerOffsetTask();
+	void recordSnapshotPeriodicallyTask();
+	void logStatsPeriodicallyTask();
 
 private:
 	static long LockTimeoutMillis;
@@ -148,14 +179,17 @@ private:
 	// Producer对象
 	//group --> MQProducerInner
 	std::map<std::string, MQProducerInner*> m_producerTable;
+	kpr::Mutex m_producerTableLock;
 
 	// Consumer对象
 	//group --> MQConsumerInner
 	std::map<std::string, MQConsumerInner*> m_consumerTable;
+	kpr::Mutex m_consumerTableLock;
 
 	// AdminExt对象
 	// group --> MQAdminExtInner
 	std::map<std::string, MQAdminExtInner*> m_adminExtTable ;
+	kpr::Mutex m_adminExtTableLock;
 
 	// 远程客户端配置
 	RemoteClientConfig* m_pRemoteClientConfig;
@@ -167,6 +201,7 @@ private:
 	// 存储从Name Server拿到的Topic路由信息
 	/// Topic---> TopicRouteData
 	std::map<std::string, TopicRouteData> m_topicRouteTable;
+	kpr::Mutex m_topicRouteTableLock;
 
 	kpr::Mutex m_mutex;
 	// 调用Name Server获取Topic路由信息时，加锁
@@ -181,9 +216,19 @@ private:
 	//     ------brokerid  addr
 	//     ------brokerid  addr
 	std::map<std::string, std::map<int, std::string> > m_brokerAddrTable;
+	kpr::Mutex m_brokerAddrTableLock;
 
-	// TODO定时线程
-	
+	// 定时线程
+	kpr::TimerTaskManager m_timerTaskManager;
+	ScheduledTask* m_pFetchNameServerAddr;
+	ScheduledTask* m_pUpdateTopicRouteInfoFromNameServerTask;
+	ScheduledTask* m_pCleanBroker;
+	ScheduledTask* m_pPersistAllConsumerOffsetTask;
+	ScheduledTask* m_pRecordSnapshotPeriodicallyTask;
+	ScheduledTask* m_pLogStatsPeriodicallyTask;
+
+	int m_scheduledTaskIds[6];
+
 	ClientRemotingProcessor* m_pClientRemotingProcessor;// 处理服务器主动发来的请求
 	PullMessageService* m_pPullMessageService;// 拉消息服务
 	RebalanceService* m_pRebalanceService;// Rebalance服务

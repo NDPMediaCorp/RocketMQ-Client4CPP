@@ -32,6 +32,11 @@ MQAdminImpl::MQAdminImpl(MQClientFactory* pMQClientFactory)
 	m_pMQClientFactory = pMQClientFactory;
 }
 
+MQAdminImpl::~MQAdminImpl()
+{
+
+}
+
 void MQAdminImpl::createTopic(const std::string& key, const std::string& newTopic, int queueNum)
 {
 	try
