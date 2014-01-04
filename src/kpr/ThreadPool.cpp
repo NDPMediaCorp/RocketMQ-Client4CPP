@@ -219,24 +219,29 @@ namespace kpr
 
 	void ThreadPool::Destroy()
 	{
-		kpr::ScopedLock<kpr::Monitor> lock(*this);
-		if (m_destroy)
+		std::list<ThreadPoolWorker_var> workers;
 		{
-			return;
-		}
+			kpr::ScopedLock<kpr::Monitor> lock(*this);
+			if (m_destroy)
+			{
+				return;
+			}
 
-		m_destroy = true;
+			m_destroy = true;
 
-		std::list<ThreadPoolWorker_var>::iterator iter;
-		for (iter = m_workers.begin(); iter != m_workers.end(); iter++)
-		{
-			(*iter)->Stop();
+			std::list<ThreadPoolWorker_var>::iterator iter;
+			for (iter = m_workers.begin(); iter != m_workers.end(); iter++)
+			{
+				workers.push_back(*iter);
+				(*iter)->Stop();
+			}
 		}
 
 		m_manager->Stop();
 		m_manager->Join();
 
-		for (iter = m_workers.begin(); iter != m_workers.end(); iter++)
+		std::list<ThreadPoolWorker_var>::iterator iter;
+		for (iter = workers.begin(); iter != workers.end(); iter++)
 		{
 			(*iter)->Join();
 		}
