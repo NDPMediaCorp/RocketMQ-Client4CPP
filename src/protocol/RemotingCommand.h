@@ -136,6 +136,8 @@ private:
 	int m_bodyLen;
 	char* m_pBody;
 
+	bool m_releaseBody;
+
 	static AtomicInteger s_seqNumber;
 };
 

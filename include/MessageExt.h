@@ -43,6 +43,8 @@ public:
 			   long long storeTimestamp,
 			   sockaddr storeHost,
 			   std::string msgId);
+	
+	~MessageExt();
 
 	static TopicFilterType parseTopicFilterType(int sysFlag);
 

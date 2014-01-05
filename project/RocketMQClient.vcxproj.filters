@@ -250,9 +250,6 @@
     <ClInclude Include="..\include\OffsetStore.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\consumer\ConsumeType.h">
-      <Filter>cosumer</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\consumer\DefaultMQPullConsumerImpl.h">
       <Filter>cosumer</Filter>
     </ClInclude>
@@ -496,6 +493,12 @@
     </ClInclude>
     <ClInclude Include="..\src\kpr\TimerThread.h">
       <Filter>kpr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ConsumeType.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\consumer\AllocateMessageQueueStrategyInner.h">
+      <Filter>cosumer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

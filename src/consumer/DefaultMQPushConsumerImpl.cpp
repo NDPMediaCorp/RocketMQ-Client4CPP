@@ -221,7 +221,7 @@ void DefaultMQPushConsumerImpl::persistConsumerOffset()
 	}
 }
 
-void DefaultMQPushConsumerImpl::updateTopicSubscribeInfo(const std::string& topic, std::set<MessageQueue>& info)
+void DefaultMQPushConsumerImpl::updateTopicSubscribeInfo(const std::string& topic, const std::set<MessageQueue>& info)
 {
 	std::map<std::string, SubscriptionData>& subTable = getSubscriptionInner();
 

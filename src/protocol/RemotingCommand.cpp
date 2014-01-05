@@ -46,13 +46,21 @@ RemotingCommand::RemotingCommand( int code,
 								  CommandCustomHeader* pCustomHeader )
 	:m_code(code),m_language(language),m_version(version),m_opaque(opaque),
 	m_flag(flag),m_remark(remark),m_pCustomHeader(pCustomHeader),
-	m_headLen(0),m_pHead(NULL),m_bodyLen(0),m_pBody(NULL)
+	m_headLen(0),m_pHead(NULL),m_bodyLen(0),m_pBody(NULL),m_releaseBody(false)
 {
 
 }
 
 RemotingCommand::~RemotingCommand()
 {
+	delete[] m_pHead;
+
+	if (m_releaseBody)
+	{
+		delete[] m_pBody;
+		m_bodyLen=0;
+		m_pBody = NULL;
+	}
 }
 
 void RemotingCommand::Encode()
@@ -113,6 +121,8 @@ int RemotingCommand::GetBodyLen()
 
 void RemotingCommand::SetBody(char* pData,int len,bool copy)
 {
+	m_releaseBody = copy;
+
 	if (copy)
 	{
 		m_pBody = new char[len];

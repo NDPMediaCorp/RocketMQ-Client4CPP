@@ -91,7 +91,7 @@ public:
 						   CommunicationMode communicationMode,
 						   SendCallback* pSendCallback);
 
-	PullResult pullMessage(const std::string& addr,
+	PullResult* pullMessage(const std::string& addr,
 							PullMessageRequestHeader* pRequestHeader,
 							int timeoutMillis,
 							CommunicationMode communicationMode,

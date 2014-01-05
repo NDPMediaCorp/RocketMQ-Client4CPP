@@ -56,6 +56,11 @@ MessageExt::MessageExt(int queueId,
 
 }
 
+MessageExt::~MessageExt()
+{
+
+}
+
 int MessageExt::getQueueId()
 {
 	return m_queueId;

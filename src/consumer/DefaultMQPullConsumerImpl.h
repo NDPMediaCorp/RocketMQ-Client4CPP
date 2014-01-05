@@ -44,7 +44,7 @@ class DefaultMQPullConsumerImpl :public  MQConsumerInner
 {
 public:
 	DefaultMQPullConsumerImpl(DefaultMQPullConsumer* pDefaultMQPullConsumer);
-
+	~DefaultMQPullConsumerImpl();
 	void createTopic(const std::string& key, const std::string& newTopic, int queueNum);
 	long long fetchConsumeOffset(MessageQueue& mq, bool fromStore);
 	std::set<MessageQueue*> fetchMessageQueuesInBalance(const std::string& topic);
@@ -58,12 +58,12 @@ public:
 	std::set<SubscriptionData> subscriptions();
 	void doRebalance();
 	void persistConsumerOffset();
-	void updateTopicSubscribeInfo(const std::string& topic, std::set<MessageQueue>& info);
+	void updateTopicSubscribeInfo(const std::string& topic, const std::set<MessageQueue>& info);
 	bool isSubscribeTopicNeedUpdate(const std::string& topic);
 	long long maxOffset(const MessageQueue& mq);
 	long long minOffset(const MessageQueue& mq);
 
-	PullResult pull(MessageQueue& mq, 
+	PullResult* pull(MessageQueue& mq, 
 					const std::string& subExpression, 
 					long long offset,
 					int maxNums);
@@ -74,7 +74,7 @@ public:
 			  int maxNums,
 			  PullCallback* pPullCallback);
 
-	PullResult pullBlockIfNotFound(MessageQueue& mq,
+	PullResult* pullBlockIfNotFound(MessageQueue& mq,
 								   const std::string& subExpression,
 								   long long offset,int maxNums);
 
@@ -105,7 +105,7 @@ private:
 	void copySubscription();
 	void checkConfig();
 
-	PullResult pullSyncImpl(MessageQueue& mq,
+	PullResult* pullSyncImpl(MessageQueue& mq,
 							const std::string& subExpression,
 							long long offset,
 							int maxNums,
@@ -145,7 +145,7 @@ public:
 	void onSuccess(PullResult& pullResult)
 	{
 		m_pCallback->onSuccess(
-			m_pDefaultMQPullConsumerImpl->m_pPullAPIWrapper->
+			*m_pDefaultMQPullConsumerImpl->m_pPullAPIWrapper->
 			processPullResult(m_mq, pullResult, m_subscriptionData));
 	}
 

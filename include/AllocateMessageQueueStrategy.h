@@ -16,8 +16,11 @@
 #if!defined __ALLOCATEMESSAGEQUEUESTRATEGY_H__
 #define __ALLOCATEMESSAGEQUEUESTRATEGY_H__
 
-#include <list>
+#include <vector>
+#include <string>
+
 #include "RocketMQClient.h"
+#include "MessageQueue.h"
 
 /**
 * Consumer队列自动分配策略
@@ -38,9 +41,9 @@ class ROCKETMQCLIENT_API AllocateMessageQueueStrategy
 	*/
 public:
 	virtual ~AllocateMessageQueueStrategy() {}
-	virtual std::list<MessageQueue*> allocate(const std::string& currentCID,
-			std::list<MessageQueue*> mqAll,
-			std::list<MessageQueue*>cidAll)=0;
+	virtual std::vector<MessageQueue>* allocate(const std::string& currentCID,
+			std::vector<MessageQueue>& mqAll,
+			std::vector<std::string>& cidAll)=0;
 };
 
 #endif

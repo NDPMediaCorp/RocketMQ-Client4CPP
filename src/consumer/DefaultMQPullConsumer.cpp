@@ -24,22 +24,37 @@
 #include "ClientConfig.h"
 #include "DefaultMQPullConsumerImpl.h"
 #include "MixAll.h"
+#include "AllocateMessageQueueStrategyInner.h"
 
 DefaultMQPullConsumer::DefaultMQPullConsumer()
+	:m_consumerGroup(MixAll::DEFAULT_CONSUMER_GROUP),
+	m_brokerSuspendMaxTimeMillis(1000 * 20),
+	m_consumerTimeoutMillisWhenSuspend(1000 * 30),
+	m_consumerPullTimeoutMillis(1000 * 10),
+	m_messageModel(BROADCASTING),
+	m_pMessageQueueListener(NULL),
+	m_pOffsetStore(NULL),
+	m_pAllocateMessageQueueStrategy( new AllocateMessageQueueAveragely())
 {
-	m_consumerGroup = MixAll::DEFAULT_CONSUMER_GROUP;
-	m_brokerSuspendMaxTimeMillis = 1000 * 20;
-	m_consumerTimeoutMillisWhenSuspend = 1000 * 30;
-	m_consumerPullTimeoutMillis = 1000 * 10;
-	m_messageModel = BROADCASTING;
-	m_pMessageQueueListener;
-	m_pOffsetStore;
-	m_pAllocateMessageQueueStrategy = NULL;
+	m_pDefaultMQPullConsumerImpl = new DefaultMQPullConsumerImpl(this);
 }
 
 DefaultMQPullConsumer::DefaultMQPullConsumer(const std::string& consumerGroup)
+	:m_consumerGroup(consumerGroup),
+	m_brokerSuspendMaxTimeMillis(1000 * 20),
+	m_consumerTimeoutMillisWhenSuspend(1000 * 30),
+	m_consumerPullTimeoutMillis(1000 * 10),
+	m_messageModel(BROADCASTING),
+	m_pMessageQueueListener(NULL),
+	m_pOffsetStore(NULL),
+	m_pAllocateMessageQueueStrategy(new AllocateMessageQueueAveragely())
 {
-	m_consumerGroup = consumerGroup;
+	m_pDefaultMQPullConsumerImpl = new DefaultMQPullConsumerImpl(this);
+}
+
+DefaultMQPullConsumer::~DefaultMQPullConsumer()
+{
+
 }
 
 //MQAdmin
@@ -74,10 +89,10 @@ MessageExt DefaultMQPullConsumer::viewMessage(const std::string& msgId)
 }
 
 QueryResult DefaultMQPullConsumer::queryMessage(const std::string& topic,
-		const std::string&  key,
-		int maxNum,
-		long long begin,
-		long long end)
+	const std::string&  key,
+	int maxNum,
+	long long begin,
+	long long end)
 {
 	return m_pDefaultMQPullConsumerImpl->queryMessage(topic, key, maxNum, begin, end);
 }
@@ -196,7 +211,7 @@ void DefaultMQPullConsumer::registerMessageQueueListener(const std::string& topi
 	}
 }
 
-PullResult DefaultMQPullConsumer::pull(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums)
+PullResult* DefaultMQPullConsumer::pull(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums)
 {
 	return m_pDefaultMQPullConsumerImpl->pull(mq, subExpression, offset, maxNums);
 }
@@ -206,16 +221,16 @@ void DefaultMQPullConsumer::pull(MessageQueue& mq, const std::string& subExpress
 	m_pDefaultMQPullConsumerImpl->pull(mq, subExpression, offset, maxNums, pPullCallback);
 }
 
-PullResult DefaultMQPullConsumer::pullBlockIfNotFound(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums)
+PullResult* DefaultMQPullConsumer::pullBlockIfNotFound(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums)
 {
 	return m_pDefaultMQPullConsumerImpl->pullBlockIfNotFound(mq, subExpression, offset, maxNums);
 }
 
 void DefaultMQPullConsumer::pullBlockIfNotFound(MessageQueue& mq,
-		const std::string& subExpression,
-		long long offset,
-		int maxNums,
-		PullCallback* pPullCallback)
+	const std::string& subExpression,
+	long long offset,
+	int maxNums,
+	PullCallback* pPullCallback)
 {
 	m_pDefaultMQPullConsumerImpl->pullBlockIfNotFound(mq, subExpression, offset, maxNums, pPullCallback);
 }

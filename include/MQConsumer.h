@@ -34,6 +34,7 @@ class MessageExt;
 class ROCKETMQCLIENT_API MQConsumer : public MQAdmin
 {
 public:
+	virtual ~MQConsumer(){}
 	/**
 	* Æô¶¯·þÎñ
 	*

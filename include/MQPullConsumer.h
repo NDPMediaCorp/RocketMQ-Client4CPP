@@ -34,6 +34,7 @@ class PullCallback;
 class ROCKETMQCLIENT_API MQPullConsumer : public MQConsumer
 {
 public:
+	virtual ~MQPullConsumer(){}
 	/**
 	* 注册监听队列变化的listener对象
 	*
@@ -62,7 +63,7 @@ public:
 	* @throws MQBrokerException
 	* @throws RemotingException
 	*/
-	virtual PullResult pull(MessageQueue& mq,
+	virtual PullResult* pull(MessageQueue& mq,
 		const std::string& subExpression,
 		long long offset,int maxNums)=0;
 
@@ -92,7 +93,7 @@ public:
 	* @throws RemotingException
 	* @throws MQClientException
 	*/
-	virtual PullResult pullBlockIfNotFound(MessageQueue& mq,
+	virtual PullResult* pullBlockIfNotFound(MessageQueue& mq,
 											const std::string& subExpression,
 											long long offset,
 											int maxNums)=0;

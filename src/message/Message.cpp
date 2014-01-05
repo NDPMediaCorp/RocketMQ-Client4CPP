@@ -64,6 +64,11 @@ Message::Message(const std::string& topic,
 	Init(topic,tags,keys,flag,body,len,waitStoreMsgOK);
 }
 
+Message::~Message()
+{
+	delete m_body;
+}
+
 Message::Message(const Message& other)
 {
 	m_body = new char[other.m_bodyLen];
@@ -78,9 +83,10 @@ Message& Message::operator=(const Message& other)
 {
 	if (this!=&other)
 	{
-		m_body = new char[other.m_bodyLen];
+		char* tmp = new char[other.m_bodyLen];
 		m_bodyLen = other.m_bodyLen;
 		delete[] m_body;
+		m_body = tmp;
 		memcpy(m_body,other.m_body,other.m_bodyLen);
 		
 		m_topic = other.m_topic;
@@ -227,9 +233,11 @@ void Message::setBody(const char* body,int len)
 {
 	if (len>0)
 	{
-		m_body = new char[len];
+		char* tmp = new char[len];
 		m_bodyLen = len;
 		delete[] m_body;
+		m_body = tmp;
+
 		memcpy(m_body,body,len);
 	}
 }
@@ -249,6 +257,7 @@ void Message::Init( const std::string& topic, const std::string& tags, const std
 	m_topic = topic;
 	m_flag = flag;
 	m_bodyLen = len;
+	m_body = NULL;
 
 	if (len>0)
 	{

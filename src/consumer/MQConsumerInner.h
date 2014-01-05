@@ -40,7 +40,7 @@ public:
 	virtual void doRebalance()=0;
 	virtual void persistConsumerOffset()=0;
 	virtual void updateTopicSubscribeInfo(const std::string& topic, const std::set<MessageQueue>& info)=0;
-	virtual bool isSubscribeTopicNeedUpdate(std::string topic)=0;
+	virtual bool isSubscribeTopicNeedUpdate(const std::string& topic)=0;
 };
 
 #endif

@@ -41,6 +41,7 @@ public:
 			int len,
 			bool waitStoreMsgOK);
 
+	virtual ~Message();
 	Message(const Message& other);
 	Message& operator=(const Message& other);
 

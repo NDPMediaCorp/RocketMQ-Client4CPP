@@ -16,7 +16,7 @@
 #if!defined __PULLRESULT_H__
 #define __PULLRESULT_H__
 
-#include <vector>
+#include <list>
 
 #include "MessageExt.h"
 #include "RocketMQClient.h"
@@ -44,7 +44,7 @@ struct ROCKETMQCLIENT_API PullResult
 			   long long nextBeginOffset,
 			   long long minOffset,
 			   long long maxOffset,
-			   std::vector<MessageExt>& msgFoundList)
+			   std::list<MessageExt*>& msgFoundList)
 		:pullStatus(pullStatus),
 		 nextBeginOffset(nextBeginOffset),
 		 minOffset(minOffset),
@@ -53,12 +53,22 @@ struct ROCKETMQCLIENT_API PullResult
 	{
 
 	}
+	
+	~PullResult()
+	{
+		std::list<MessageExt*>::iterator it = msgFoundList.begin();
+
+		for (;it!=msgFoundList.end();it++)
+		{
+			delete *it;
+		}
+	}
 
 	PullStatus pullStatus;
 	long long nextBeginOffset;
 	long long minOffset;
 	long long maxOffset;
-	std::vector<MessageExt> msgFoundList;
+	std::list<MessageExt*> msgFoundList;
 };
 
 #endif

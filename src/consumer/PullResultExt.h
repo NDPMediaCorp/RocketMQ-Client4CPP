@@ -29,7 +29,7 @@ struct PullResultExt : public PullResult
 				  long long nextBeginOffset,
 				  long long minOffset,
 				  long long maxOffset,
-				  std::vector<MessageExt>& msgFoundList,
+				  std::list<MessageExt*>& msgFoundList,
 				  long suggestWhichBrokerId,
 				  const char* messageBinary,
 				  int messageBinaryLen)

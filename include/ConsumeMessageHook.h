@@ -16,13 +16,15 @@
 #if!defined __CONSUMEMESSAGEHOOK_H__
 #define __CONSUMEMESSAGEHOOK_H__
 
+#include <list>
+
 #include "RocketMQClient.h"
 #include "MessageQueue.h"
 
 typedef struct
 {
 	std::string consumerGroup;
-	std::vector<MessageExt> msgList;
+	std::list<MessageExt*> msgList;
 	MessageQueue mq;
 	bool success;
 	void* arg;

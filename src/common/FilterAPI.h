@@ -19,6 +19,8 @@
 
 #include <string>
 #include "SubscriptionData.h"
+#include "UtilAll.h"
+#include "MQClientException.h"
 
 class FilterAPI
 {
@@ -28,6 +30,38 @@ public:
 		SubscriptionData* subscriptionData = new SubscriptionData();
 		subscriptionData->setTopic(topic);
 		subscriptionData->setSubString(subString);
+
+		if (subString.empty() || subString == SubscriptionData::SUB_ALL)
+		{
+			subscriptionData->setSubString(SubscriptionData::SUB_ALL);
+		}
+		else
+		{
+			std::vector<std::string> out;
+
+			UtilAll::Split(out,subString,"||");
+
+			if (out.empty())
+			{
+				THROW_MQEXCEPTION(MQClientException,"FilterAPI subString split error",-1);
+			}
+
+			for (size_t i=0;i< out.size();i++)
+			{
+				std::string tag = out[i];
+				if (!tag.empty())
+				{
+					std::string trimString = UtilAll::Trim(tag);
+
+					if (!trimString.empty())
+					{
+						subscriptionData->getTagsSet().insert(trimString);
+						
+						// TODO subscriptionData.getCodeSet().add(trimString.hashCode());
+					}
+				}
+			}
+		}
 
 		return subscriptionData;
 	}

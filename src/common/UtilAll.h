@@ -50,7 +50,7 @@ public:
 		return out.size();
 	}
 
-	std::string Trim(const std::string& str)
+	static std::string Trim(const std::string& str)
 	{
 		if (str.empty())
 		{
@@ -99,6 +99,22 @@ public:
 	static int hashCode(void* pData, int len)
 	{
 		return 0;
+	}
+
+	static const char* uncompress(const char* pIn,int inLen,int* outLen)
+	{
+		*outLen = inLen;
+		return pIn;
+	}
+
+	static unsigned long long hexstr2ull(const char* str)
+	{
+		char* end;
+#ifdef WIN32
+		return _strtoui64(str,&end,16);
+#else
+		return strtoull(str,&end,16);
+#endif
 	}
 };
 

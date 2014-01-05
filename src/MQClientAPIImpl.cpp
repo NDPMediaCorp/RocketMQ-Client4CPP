@@ -226,7 +226,7 @@ SendResult MQClientAPIImpl::sendMessage(const std::string& addr,
 	return result;
 }
 
-PullResult MQClientAPIImpl::pullMessage(const std::string& addr,
+PullResult* MQClientAPIImpl::pullMessage(const std::string& addr,
 										PullMessageRequestHeader* pRequestHeader,
 										int timeoutMillis,
 										CommunicationMode communicationMode,
@@ -241,27 +241,24 @@ PullResult MQClientAPIImpl::pullMessage(const std::string& addr,
 			m_projectGroupPrefix));
 	}
 
-	PullResult result;
-
 	RemotingCommand* request = RemotingCommand::createRequestCommand(PULL_MESSAGE_VALUE, pRequestHeader);
 	request->Encode();
 
 	switch (communicationMode)
 	{
 	case ONEWAY:
-		
-		return result;
+		return NULL;
 	case ASYNC:
 		pullMessageAsync(addr, request, timeoutMillis, pPullCallback);
-		return result;
+		return NULL;
 	case SYNC:
-		return *pullMessageSync(addr, request, timeoutMillis);
+		return pullMessageSync(addr, request, timeoutMillis);
 	default:
 		assert(false);
 		break;
 	}
 
-	return result;
+	return NULL;
 }
 
 MessageExt MQClientAPIImpl::viewMessage( const std::string& addr,  long long phyoffset,  int timeoutMillis)
@@ -771,7 +768,7 @@ PullResult* MQClientAPIImpl::processPullResponse( RemotingCommand* pResponse)
 	}
 
 	PullMessageResponseHeader* responseHeader =(PullMessageResponseHeader*) pResponse->getCommandCustomHeader();
-	std::vector<MessageExt> msgFoundList;
+	std::list<MessageExt*> msgFoundList;
 	return new PullResultExt(pullStatus, responseHeader->nextBeginOffset,
 		responseHeader->minOffset, responseHeader->maxOffset, msgFoundList,
 		responseHeader->suggestWhichBrokerId, pResponse->GetBody(),pResponse->GetBodyLen());
@@ -783,5 +780,10 @@ PullResult* MQClientAPIImpl::pullMessageSync(const std::string& addr,
 {
 	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *pRequest, timeoutMillis);
 
-	return processPullResponse(response);
+	PullResult* result = processPullResponse(response);
+
+	response->SetBody(NULL,0,false);
+	delete response;
+
+	return result;
 }

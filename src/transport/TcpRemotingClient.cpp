@@ -213,6 +213,7 @@ void TcpRemotingClient::Run()
 		}
 		catch (...)
 		{
+			
 		}
 	}
 	while (!m_stop);
@@ -276,7 +277,6 @@ void TcpRemotingClient::ProcessData( std::string* pData )
 	}
 
 	cmd->MakeCustomHeader(code,data,len);
-
 	processMessageReceived(cmd);
 
 	delete pData;
@@ -306,6 +306,13 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 	if (responseCommand ==NULL)
 	{
 		// 发送请求成功，读取应答超时
+		if (responseFuture->isSendRequestOK())
+		{
+			
+		}
+		else// 发送请求失败
+		{
+		}
 	}
 
 	return responseCommand;

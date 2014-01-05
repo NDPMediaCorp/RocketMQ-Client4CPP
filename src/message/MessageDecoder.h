@@ -20,6 +20,7 @@
 #include <list>
 #include <map>
 
+#include "SocketUtil.h"
 #include "MessageId.h"
 
 class MessageExt;
@@ -32,15 +33,11 @@ class UnknownHostException;
 class MessageDecoder
 {
 public:
-	static std::string createMessageId(const char* pInput,
-										int inputLen,
-										const char* pAddr,
-										int addrLen,
-										long long offset);
+	static std::string createMessageId(sockaddr& addr, long long offset);
 	static MessageId decodeMessageId(const std::string& msgId);
 
-	static MessageExt* decode(const char* pData, int len);
-	static MessageExt* decode(const char* pData, int len, bool readBody);
+	static MessageExt* decode(const char* pData, int len, int& offset);
+	static MessageExt* decode(const char* pData, int len, int& offset, bool readBody);
 
 	static std::list<MessageExt*> decodes(const char* pData, int len);
 	static std::list<MessageExt*> decodes(const char* pData, int len, bool readBody);

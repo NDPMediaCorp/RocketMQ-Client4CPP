@@ -29,7 +29,7 @@ class ROCKETMQCLIENT_API ClientConfig
 {
 public:
 	ClientConfig();
-	~ClientConfig();
+	virtual ~ClientConfig();
 	
 	//clientid=ip@instanceName
 	std::string buildMQClientId();

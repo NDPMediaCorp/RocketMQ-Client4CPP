@@ -956,7 +956,6 @@ void MQClientFactory::cleanOfflineBroker()
 			std::string& addr = it1->second;
 			if (!isBrokerAddrExistInTopicRouteTable(addr))
 			{
-
 				std::map<int, std::string>::iterator itTmp = it1;
 				it1++;
 				cloneTable.erase(itTmp);

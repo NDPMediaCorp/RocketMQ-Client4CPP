@@ -37,9 +37,15 @@
 #include "Validators.h"
 
 DefaultMQPullConsumerImpl::DefaultMQPullConsumerImpl(DefaultMQPullConsumer* pDefaultMQPullConsumer)
+	:m_pDefaultMQPullConsumer(pDefaultMQPullConsumer),
+	m_serviceState(CREATE_JUST)
 {
-	m_pDefaultMQPullConsumer = pDefaultMQPullConsumer;
 	m_pRebalanceImpl = new RebalancePullImpl(this);
+}
+
+DefaultMQPullConsumerImpl::~DefaultMQPullConsumerImpl()
+{
+
 }
 
 void DefaultMQPullConsumerImpl::createTopic(const std::string& key, const std::string& newTopic, int queueNum)
@@ -123,7 +129,7 @@ void  DefaultMQPullConsumerImpl::persistConsumerOffset()
 	//TODO
 }
 
-void  DefaultMQPullConsumerImpl::updateTopicSubscribeInfo(const std::string& topic, std::set<MessageQueue>& info)
+void  DefaultMQPullConsumerImpl::updateTopicSubscribeInfo(const std::string& topic, const std::set<MessageQueue>& info)
 {
 	//TODO
 }
@@ -146,7 +152,7 @@ long long  DefaultMQPullConsumerImpl::minOffset(const MessageQueue& mq)
 	return m_pMQClientFactory->getMQAdminImpl()->minOffset(mq);
 }
 
-PullResult  DefaultMQPullConsumerImpl::pull(MessageQueue& mq,
+PullResult* DefaultMQPullConsumerImpl::pull(MessageQueue& mq,
 	const std::string& subExpression,
 	long long offset,
 	int maxNums)
@@ -163,7 +169,7 @@ void  DefaultMQPullConsumerImpl::pull(MessageQueue& mq,
 	pullAsyncImpl(mq, subExpression, offset, maxNums, pPullCallback, false);
 }
 
-PullResult  DefaultMQPullConsumerImpl::pullBlockIfNotFound(MessageQueue& mq, 
+PullResult* DefaultMQPullConsumerImpl::pullBlockIfNotFound(MessageQueue& mq, 
 	const std::string& subExpression, 
 	long long offset,
 	int maxNums)
@@ -344,7 +350,7 @@ void  DefaultMQPullConsumerImpl::makeSureStateOK()
 	}
 }
 
-PullResult  DefaultMQPullConsumerImpl::pullSyncImpl(MessageQueue& mq,
+PullResult* DefaultMQPullConsumerImpl::pullSyncImpl(MessageQueue& mq,
 	const std::string& subExpression,
 	long long offset,
 	int maxNums,
@@ -381,7 +387,7 @@ PullResult  DefaultMQPullConsumerImpl::pullSyncImpl(MessageQueue& mq,
 		block ? m_pDefaultMQPullConsumer->getConsumerTimeoutMillisWhenSuspend()
 		: m_pDefaultMQPullConsumer->getConsumerPullTimeoutMillis();
 
-	PullResult pullResult = m_pPullAPIWrapper->pullKernelImpl(//
+	PullResult* pullResult = m_pPullAPIWrapper->pullKernelImpl(//
 		mq, // 1
 		subscriptionData->getSubString(), // 2
 		0L, // 3
@@ -395,7 +401,7 @@ PullResult  DefaultMQPullConsumerImpl::pullSyncImpl(MessageQueue& mq,
 		NULL// 11
 		);
 
-	return m_pPullAPIWrapper->processPullResult(mq, pullResult, *subscriptionData);
+	return m_pPullAPIWrapper->processPullResult(mq, *pullResult, *subscriptionData);
 }
 
 void  DefaultMQPullConsumerImpl::subscriptionAutomatically(const std::string& topic)
@@ -462,7 +468,7 @@ void  DefaultMQPullConsumerImpl::pullAsyncImpl(//
 			new DefaultMQPullConsumerImplCallback(*subscriptionData,
 			mq,this,pPullCallback);
 
-		PullResult pullResult = m_pPullAPIWrapper->pullKernelImpl(//
+		PullResult* pullResult = m_pPullAPIWrapper->pullKernelImpl(//
 			mq, // 1
 			subscriptionData->getSubString(), // 2
 			0L, // 3

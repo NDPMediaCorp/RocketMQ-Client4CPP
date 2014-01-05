@@ -53,7 +53,7 @@ void  PullAPIWrapper::updatePullFromWhichNode(MessageQueue& mq, long brokerId)
 	}
 }
 
-PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq, 
+PullResult* PullAPIWrapper::processPullResult(MessageQueue& mq, 
 	PullResult& pullResult,
 	SubscriptionData& subscriptionData) 
 {
@@ -62,18 +62,18 @@ PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq,
 
 	updatePullFromWhichNode(mq, pullResultExt.suggestWhichBrokerId);
 
-	if (FOUND == pullResult.pullStatus)
+	if (pullResult.pullStatus == FOUND)
 	{
 		std::list<MessageExt*> msgList =
 			MessageDecoder::decodes(pullResultExt.messageBinary, pullResultExt.messageBinaryLen);
 
 		// 消息再次过滤
-		std::list<MessageExt*> msgListFilterAgain = msgList;
+		std::list<MessageExt*> msgListFilterAgain;
+
 		if (!subscriptionData.getTagsSet().empty()) 
 		{
-			msgListFilterAgain.clear();
 			std::list<MessageExt*>::iterator it = msgList.begin();
-			for (;it!=msgList.end();it++)
+			for (;it!=msgList.end();)
 			{
 				MessageExt* msg = *it;
 				if (!msg->getTags().empty())
@@ -82,9 +82,19 @@ PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq,
 					if (tags.find(msg->getTags())!=tags.end())
 					{
 						msgListFilterAgain.push_back(msg);
+						it = msgList.erase(it);
+					}
+					else
+					{
+						it++;
 					}
 				}
 			}
+		}
+		else
+		{
+			msgListFilterAgain.assign(msgList.begin(),msgList.end());
+			msgList.clear();
 		}
 
 		// 清除虚拟运行环境相关的projectGroupPrefix
@@ -131,7 +141,7 @@ PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq,
 		std::list<MessageExt*>::iterator it = msgListFilterAgain.begin();
 		for (;it!=msgListFilterAgain.end();it++)
 		{
-			pullResultExt.msgFoundList.push_back(*(*it));
+			pullResultExt.msgFoundList.push_back(*it);
 		}
 
 		//清除资源
@@ -140,9 +150,13 @@ PullResult& PullAPIWrapper::processPullResult(MessageQueue& mq,
 		{
 			delete *it;
 		}
+
+		delete[] pullResultExt.messageBinary;
+		pullResultExt.messageBinary = NULL;
+		pullResultExt.messageBinaryLen = 0;
 	}
 
-	return pullResult;
+	return &pullResult;
 }
 
 long  PullAPIWrapper::recalculatePullFromWhichNode(MessageQueue& mq)
@@ -156,7 +170,7 @@ long  PullAPIWrapper::recalculatePullFromWhichNode(MessageQueue& mq)
 	return MixAll::MASTER_ID;
 }
 
-PullResult  PullAPIWrapper::pullKernelImpl(MessageQueue& mq,
+PullResult* PullAPIWrapper::pullKernelImpl(MessageQueue& mq,
 											const std::string& subExpression,
 											long long subVersion,
 											long long offset,
@@ -201,7 +215,7 @@ PullResult  PullAPIWrapper::pullKernelImpl(MessageQueue& mq,
 		requestHeader->subscription = subExpression;
 		requestHeader->subVersion = subVersion;
 
-		PullResult pullResult = m_pMQClientFactory->getMQClientAPIImpl()->pullMessage(//
+		PullResult* pullResult = m_pMQClientFactory->getMQClientAPIImpl()->pullMessage(//
 			findBrokerResult.brokerAddr,//
 			requestHeader,//
 			timeoutMillis,//

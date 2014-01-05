@@ -63,7 +63,7 @@ void MQClientManager::removeClientFactory(const std::string&  clientId)
 
 	if (it!=m_factoryTable.end())
 	{
-		delete it->second;
+		//delete it->second;
 		m_factoryTable.erase(it);
 	}
 }

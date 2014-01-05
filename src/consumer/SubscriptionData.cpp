@@ -69,7 +69,7 @@ void SubscriptionData::setSubVersion(long long subVersion)
 	m_subVersion = subVersion;
 }
 
-std::set<int> SubscriptionData::getCodeSet()
+std::set<int>& SubscriptionData::getCodeSet()
 {
 	return m_codeSet;
 }

@@ -75,6 +75,7 @@
     <ClInclude Include="..\include\AllocateMessageQueueStrategy.h" />
     <ClInclude Include="..\include\ClientConfig.h" />
     <ClInclude Include="..\include\ConsumeMessageHook.h" />
+    <ClInclude Include="..\include\ConsumeType.h" />
     <ClInclude Include="..\include\DefaultMQProducer.h" />
     <ClInclude Include="..\include\DefaultMQPullConsumer.h" />
     <ClInclude Include="..\include\DefaultMQPushConsumer.h" />
@@ -117,12 +118,12 @@
     <ClInclude Include="..\src\common\Validators.h" />
     <ClInclude Include="..\src\common\VirtualEnvUtil.h" />
     <ClInclude Include="..\src\CommunicationMode.h" />
+    <ClInclude Include="..\src\consumer\AllocateMessageQueueStrategyInner.h" />
     <ClInclude Include="..\src\consumer\ConsumeMessageConcurrentlyService.h" />
     <ClInclude Include="..\src\consumer\ConsumeMessageOrderlyService.h" />
     <ClInclude Include="..\src\consumer\ConsumeMessageService.h" />
     <ClInclude Include="..\src\consumer\ConsumerInvokeCallback.h" />
     <ClInclude Include="..\src\consumer\ConsumerStatManage.h" />
-    <ClInclude Include="..\src\consumer\ConsumeType.h" />
     <ClInclude Include="..\src\consumer\DefaultMQPullConsumerImpl.h" />
     <ClInclude Include="..\src\consumer\DefaultMQPushConsumerImpl.h" />
     <ClInclude Include="..\src\consumer\LocalFileOffsetStore.h" />

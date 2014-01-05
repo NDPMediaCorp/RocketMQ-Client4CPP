@@ -37,7 +37,7 @@ public:
 	long long getSubVersion();
 	void setSubVersion(long long subVersion);
 
-	std::set<int> getCodeSet();
+	std::set<int>& getCodeSet();
 	void setCodeSet(const std::set<int>& codeSet);
 
 	int hashCode();

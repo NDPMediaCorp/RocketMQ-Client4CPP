@@ -231,10 +231,10 @@ CommandCustomHeader* PullMessageResponseHeader::Decode(char* pData,int len)
 	}
 
 	Json::Value ext = object["extFields"];
-	long long suggestWhichBrokerId = (long long)ext["suggestWhichBrokerId"].asDouble();
-	long long nextBeginOffset = (long long)ext["nextBeginOffset"].asDouble();
-	long long minOffset = (long long)ext["minOffset"].asDouble();
-	long long maxOffset = (long long)ext["maxOffset"].asDouble();
+	long long suggestWhichBrokerId = str2ll(ext["suggestWhichBrokerId"].asCString());
+	long long nextBeginOffset = str2ll(ext["nextBeginOffset"].asCString());
+	long long minOffset = str2ll(ext["minOffset"].asCString());
+	long long maxOffset = str2ll(ext["maxOffset"].asCString());
 	
 	PullMessageResponseHeader* h = new PullMessageResponseHeader();
 

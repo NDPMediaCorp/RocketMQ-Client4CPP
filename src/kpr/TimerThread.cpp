@@ -54,7 +54,7 @@ namespace kpr
 			}
 
 			unsigned long long checkEndTime = GetCurrentTimeMillis();
-			unsigned int sleepTime = m_checkInterval - (unsigned int)(checkEndTime -currentCheckTime);
+			int sleepTime = m_checkInterval - (int)(checkEndTime -currentCheckTime);
 			if (sleepTime < 0)
 			{
 				sleepTime = 0;

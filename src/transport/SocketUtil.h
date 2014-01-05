@@ -70,4 +70,8 @@ sockaddr string2SocketAddress(const std::string& addr);
 std::string socketAddress2String(sockaddr addr);
 std::string getHostName(sockaddr addr);
 std::string getLocalAddress();
+
+unsigned long long h2nll(unsigned long long v);
+unsigned long long n2hll(unsigned long long v);
+
 #endif

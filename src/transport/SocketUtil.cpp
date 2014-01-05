@@ -229,7 +229,7 @@ void GetLocalAddrs(std::vector<unsigned int> &addrs)
 	}
 
 	std::vector<unsigned int>::iterator it = addrs.begin();
-	for (;it!=addrs.end();it++)
+	for (;it!=addrs.end();)
 	{
 		if (*it>= 0x7F000000U && *it < 0x80000000U)
 		{
@@ -276,4 +276,33 @@ std::string getHostName(sockaddr addr)
 	{
 		return inet_ntoa(in.sin_addr);
 	}
+}
+
+
+unsigned long long swapll(unsigned long long v)
+{
+#ifdef ENDIANMODE_BIG
+	return v;
+#else
+	unsigned long long ret = ((v << 56) 
+								| ((v & 0xff00) << 40)
+								| ((v & 0xff0000) << 24)
+								| ((v & 0xff000000) << 8)
+								| ((v >> 8 ) & 0xff000000)
+								| ((v >> 24 ) & 0xff0000)
+								| ((v >> 40 ) & 0xff00)
+								| (v >> 56 ));
+
+	return ret;
+#endif
+}
+
+unsigned long long h2nll(unsigned long long v)
+{
+	return swapll(v);
+}
+
+unsigned long long n2hll(unsigned long long v)
+{
+	return swapll(v);
 }

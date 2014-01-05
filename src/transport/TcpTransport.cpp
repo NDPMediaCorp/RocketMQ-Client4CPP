@@ -349,7 +349,6 @@ void TcpTransport::ProcessData(std::list<std::string*>& outDataList)
 			std::string* data = new std::string;
 			data->assign(m_pRecvBuf,msgLen);
 			outDataList.push_back(data);
-
 			m_recvBufUsed -= msgLen;
 
 			memmove(m_pRecvBuf, m_pRecvBuf + msgLen, m_recvBufUsed);

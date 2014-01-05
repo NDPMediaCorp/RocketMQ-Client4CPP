@@ -39,6 +39,7 @@ class ROCKETMQCLIENT_API DefaultMQPullConsumer : public ClientConfig , public MQ
 public:
 	DefaultMQPullConsumer();
 	DefaultMQPullConsumer(const std::string& consumerGroup);
+	~DefaultMQPullConsumer();
 
 	//MQAdmin
 	void createTopic(const std::string& key, const std::string& newTopic, int queueNum);
@@ -79,14 +80,14 @@ public:
 
 	//MQPullConsumer
 	void registerMessageQueueListener(const std::string& topic, MessageQueueListener* pListener);
-	PullResult pull(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums);
+	PullResult* pull(MessageQueue& mq, const std::string& subExpression, long long offset,int maxNums);
 	void pull(MessageQueue& mq,
 		const std::string& subExpression,
 		long long offset,
 		int maxNums,
 		PullCallback* pPullCallback);
 
-	PullResult pullBlockIfNotFound(MessageQueue& mq,
+	PullResult* pullBlockIfNotFound(MessageQueue& mq,
 		const std::string& subExpression,
 		long long offset,
 		int maxNums);

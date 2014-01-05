@@ -79,7 +79,7 @@ public:
 	std::set<SubscriptionData> subscriptions();
 	void doRebalance() ;
 	void persistConsumerOffset() ;
-	void updateTopicSubscribeInfo(const std::string& topic, std::set<MessageQueue>& info);
+	void updateTopicSubscribeInfo(const std::string& topic, const std::set<MessageQueue>& info);
 	std::map<std::string, SubscriptionData>& getSubscriptionInner() ;
 	bool isSubscribeTopicNeedUpdate(const std::string& topic);
 
