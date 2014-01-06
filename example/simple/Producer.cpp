@@ -3,13 +3,36 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <string>
 #include <iostream>
+
+#ifdef WIN32
+#   include <sys/timeb.h>
+#   include <process.h>
+#else
+#   include <unistd.h>
+#   include <sys/types.h>
+#   include <signal.h>
+#endif
 
 #include <DefaultMQProducer.h>
 #include <Message.h>
 #include <SendResult.h>
 #include <MQClientException.h>
+
+void MySleep(long millis)
+{
+
+#ifdef WIN32
+	::Sleep(millis);
+#else
+	struct timespec tv;
+	tv.tv_sec = millis / 1000;
+	tv.tv_nsec = (millis % 1000) * 1000000;
+	 nanosleep(&tv, 0);
+#endif
+}
 
 int main(int argc, char* argv[])
 {
@@ -46,12 +69,12 @@ int main(int argc, char* argv[])
 				value,// body
 				strlen(value)+1);
 			SendResult sendResult = producer.send(msg);
-			Sleep(100);
+			MySleep(100);
 			printf("sendresult=%d,msgid=%s\n",sendResult.getSendStatus(),sendResult.getMsgId().c_str());
 		}
 		catch (MQClientException& e) {
 			std::cout<<e<<std::endl;
-			Sleep(3000);
+			MySleep(3000);
 		}
 	}
 
