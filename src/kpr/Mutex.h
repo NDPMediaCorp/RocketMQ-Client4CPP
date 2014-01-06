@@ -86,6 +86,7 @@ namespace kpr
 		mutable ThreadId m_owner;
 
 		friend class Condition;
+		friend class ConditionHelper;
 	};
 }
 #endif

@@ -119,7 +119,26 @@ namespace kpr
 		long m_unblocked;
 		long m_toUnblock;
 	};
+#else
+	class ConditionHelper
+	{
+		RecursiveMutex& m_mutex;
+		int m_count;
 
+	public:
+
+		ConditionHelper(RecursiveMutex& mutex, int count)
+			: m_mutex(mutex),
+			m_count(count)
+		{
+		}
+
+		~ConditionHelper()
+		{
+			pthread_mutex_unlock(&m_mutex.m_mutex);
+			m_mutex.lock(m_count);
+		}
+	};
 #endif
 
 
@@ -252,8 +271,8 @@ namespace kpr
 		}
 #else
 		unsigned int count = mutex.reset4Condvar();
-		pthread_mutex_unlock(&mutex.m_mutex);
-		mutex.lock(count);
+		ConditionHelper unlock(mutex, count);
+
 		int ret = 0;
 		if (timeout < 0)
 		{
