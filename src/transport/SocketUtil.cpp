@@ -201,7 +201,7 @@ void GetLocalAddrs(std::vector<unsigned int> &addrs)
 	{		
 		char hostname[1024];
 
-		ret = gethostname(hostname, sizeof(hostname));
+		int ret = gethostname(hostname, sizeof(hostname));
 		if (ret == 0)
 		{
 			struct addrinfo *result = NULL;
@@ -255,7 +255,7 @@ std::string getLocalAddress()
 {
 	std::vector<unsigned int> addrs;
 	GetLocalAddrs(addrs);
-	IN_ADDR addr;
+	struct in_addr addr;
 	addr.s_addr=htonl(addrs[0]);
 
 	return inet_ntoa(addr);

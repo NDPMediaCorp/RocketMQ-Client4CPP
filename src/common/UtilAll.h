@@ -16,6 +16,7 @@
 #if!defined __UTILALL_H__
 #define __UTILALL_H__
 
+#include <stdlib.h>
 #include <string>
 #include <vector>
 

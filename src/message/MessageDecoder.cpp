@@ -178,9 +178,9 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 		sa.sin_port = htons(port);
 		sa.sin_addr.s_addr = bornHost;
 
-		sockaddr addr;
-		memcpy(&addr,&sa,sizeof(sockaddr));
-		msgExt->setBornHost(addr);
+		sockaddr bornAddr;
+		memcpy(&bornAddr,&sa,sizeof(sockaddr));
+		msgExt->setBornHost(bornAddr);
 
 		// 11 STORETIMESTAMP
 		long long storeTimestamp;
@@ -197,9 +197,11 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 		sa.sin_family = AF_INET;
 		sa.sin_port = htons(port);
 		sa.sin_addr.s_addr = storeHost;
-		memcpy(&addr,&sa,sizeof(sockaddr));
 
-		msgExt->setStoreHost(addr);
+		sockaddr storeAddr;
+		memcpy(&storeAddr,&sa,sizeof(sockaddr));
+
+		msgExt->setStoreHost(storeAddr);
 
 		// 13 RECONSUMETIMES
 		int reconsumeTimes;
@@ -271,7 +273,7 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 		offset = 22*sizeof(int)+bodyLen+1+topicLen+2+propertiesLength;
 
 		// ÏûÏ¢ID
-		std::string msgId =  createMessageId(msgExt->getStoreHost(), msgExt->getCommitLogOffset());
+		std::string msgId =  createMessageId(storeAddr, physicOffset);
 		msgExt->setMsgId(msgId);
 
 		return msgExt;
