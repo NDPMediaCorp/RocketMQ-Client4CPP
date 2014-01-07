@@ -5,7 +5,7 @@
 * @[kangliqiang](https://github.com/kangliqiang)
 
 ### 目前现状
-* 支持发送消息，订阅消息暂不支持
+* 支持发送消息，支持pull模式消费消息，订阅消息暂不支持
 
 
 ### 发展规划
