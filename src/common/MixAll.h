@@ -41,7 +41,7 @@ public:
 	static const std::string NAMESRV_ADDR_ENV;
 	static const std::string ROCKETMQ_HOME_ENV;
 	static const std::string  ROCKETMQ_HOME_PROPERTY;
-
+	static const std::string MESSAGE_COMPRESS_LEVEL;
 	static std::string getRetryTopic(const std::string& consumerGroup);
 };
 

@@ -34,19 +34,57 @@ void MySleep(long millis)
 #endif
 }
 
+void Usage(const char* program)
+{
+	printf("Usage:%s ip:port [-n] [-v]\n",program);
+	printf("\t -n message count\n");
+	printf("\t -v message size \n");
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc<2)
 	{
-		printf("Usage:%s ip:port\n",argv[0]);
+		Usage(argv[0]);
 		return 0;
 	}
 
 	int count = 1000;
+	int size = 32;
 
-	if (argc>2)
+	for (int i=2; i< argc; i++)
 	{
-		count = atoi(argv[2]);
+		if (strcmp(argv[i],"-n")==0)
+		{
+			if (i+1 < argc)
+			{
+				count = atoi(argv[i+1]);
+				i++;
+			}
+			else
+			{
+				Usage(argv[0]);
+				return 0;
+			}
+		}
+		else if (strcmp(argv[i],"-v")==0)
+		{
+			if (i+1 < argc)
+			{
+				size = atoi(argv[i+1]);
+				i++;
+			}
+			else
+			{
+				Usage(argv[0]);
+				return 0;
+			}
+		}
+		else
+		{
+			Usage(argv[0]);
+			return 0;
+		}
 	}
 
 	DefaultMQProducer producer("please_rename_unique_group_name");
@@ -55,14 +93,36 @@ int main(int argc, char* argv[])
 
 	std::string tags[] = { "TagA", "TagB", "TagC", "TagD", "TagE" };
 
-	char key[8];
-	char value[32];
+	char key[16];
+	char* value = new char[size];
+	
+	strcpy(value,"Hello RocketMQ");
+
+	for (int i=14;i<size-8;i++)
+	{
+		char ch;
+		switch (i%3)
+		{
+		case 0:
+			ch='a';
+			break;
+		case 1:
+			ch='b';
+			break;
+		case 2:
+		default:
+			ch='c';
+			break;
+		}
+
+		*(value+i) = ch;
+	}
 
 	for (int i = 0; i < count; i++) {
 		try
 		{
 			sprintf(key,"KEY%d",i);
-			sprintf(value,"Hello RocketMQ %d",i);
+			sprintf(value + size -8,"%d",i);
 			Message msg("TopicTest",// topic
 				tags[i % 5],// tag
 				key,// key

@@ -230,10 +230,23 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 				// uncompress body
 				if ((sysFlag & MessageSysFlag::CompressedFlag) == MessageSysFlag::CompressedFlag)
 				{
-					body = UtilAll::uncompress(body, bodyLen, &newBodyLen);
+					unsigned char* pOut;
+					int outLen;
+					
+					if (UtilAll::decompress(body,bodyLen,&pOut,&outLen))
+					{
+						msgExt->setBody((char*)pOut,outLen);
+						free(pOut);
+					}
+					else
+					{
+						msgExt->setBody(body,newBodyLen);
+					}
 				}
-
-				msgExt->setBody(body,newBodyLen);
+				else
+				{
+					msgExt->setBody(body,newBodyLen);
+				}
 			}
 			else
 			{
@@ -287,14 +300,12 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 
 std::list<MessageExt*> MessageDecoder::decodes(const char* pData, int len)
 {
-	return decodes(pData, len, true);;
+	return decodes(pData, len, true);
 }
 
 std::list<MessageExt*> MessageDecoder::decodes(const char* pData, int len, bool readBody)
 {
-
 	std::list<MessageExt*> list;
-	//return list;
 
 	int offset=0;
 	while (offset<len)

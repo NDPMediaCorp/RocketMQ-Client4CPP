@@ -28,7 +28,7 @@ SOURCE := $(foreach dir,$(DIRS), $(wildcard $(dir)/*.cpp))
 OBJS := $(filter-out dllmain.o,$(patsubst %.cpp,%.o, $(notdir $(SOURCE))))
 
 OUT :=librocketmq$(LIBEXT).so
-LIBS := jsoncpp$(LIBEXT) pthread
+LIBS := jsoncpp$(LIBEXT) pthread z
 LIBPATH := -L$(TOPDIR)/libs/jsoncpp/lib
 INCLUDEPATH :=  -I$(TOPDIR)/include -I$(TOPDIR)/libs/jsoncpp/include $(addprefix -I ,$(DIRS))
 

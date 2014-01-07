@@ -233,14 +233,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ROCKETMQCLIENT_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include;../src;../src/consumer;../src/producer;../src/message;../src/transport;../src/common;../src/kpr;../src/protocol;../libs/jsoncpp/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../src;../src/consumer;../src/producer;../src/message;../src/transport;../src/common;../src/kpr;../src/protocol;../libs/jsoncpp/include;../libs/zlib/include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../libs/jsoncpp/lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>json_vc2010_libmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../libs/jsoncpp/lib;../libs/zlib/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>json_vc2010_libmtd.lib;zdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)RocketMQClientD.lib</ImportLibrary>
     </Link>
@@ -253,7 +253,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ROCKETMQCLIENT_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include;../src;../src/consumer;../src/producer;../src/message;../src/transport;../src/common;../src/kpr;../src/protocol;../libs/jsoncpp/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../src;../src/consumer;../src/producer;../src/message;../src/transport;../src/common;../src/kpr;../src/protocol;../libs/jsoncpp/include;../libs/zlib/include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -261,8 +261,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../libs/jsoncpp/lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>json_vc2010_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../libs/jsoncpp/lib;../libs/zlib/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>json_vc2010_libmt.lib;zdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

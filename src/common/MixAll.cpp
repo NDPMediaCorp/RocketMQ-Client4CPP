@@ -28,8 +28,9 @@ const std::string MixAll::SELF_TEST_TOPIC = "SELF_TEST_TOPIC";
 const std::string MixAll::RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";
 const std::string MixAll::DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";
 const std::string MixAll::NAMESRV_ADDR_ENV = "NAMESRV_ADDR";
-const std::string ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
-const std::string  ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir";
+const std::string MixAll::ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
+const std::string MixAll::ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir";
+const std::string MixAll::MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
 
 std::string MixAll::getRetryTopic(const std::string& consumerGroup)
 {

@@ -17,6 +17,8 @@
 */
 
 #include "DefaultMQProducer.h"
+
+#include <assert.h>
 #include "MessageExt.h"
 #include "QueryResult.h"
 #include "DefaultMQProducerImpl.h"
@@ -24,26 +26,27 @@
 #include "MQClientException.h"
 
 DefaultMQProducer::DefaultMQProducer()
-	:m_producerGroup (MixAll::DEFAULT_PRODUCER_GROUP),
-	 m_createTopicKey(MixAll::DEFAULT_TOPIC),
-	 m_defaultTopicQueueNums(4),
+	:m_defaultTopicQueueNums(4),
 	 m_sendMsgTimeout(3000),
 	 m_compressMsgBodyOverHowmuch(1024 * 4),
+	 m_maxMessageSize(1024 * 128),
+	 m_producerGroup (MixAll::DEFAULT_PRODUCER_GROUP),
+	 m_createTopicKey(MixAll::DEFAULT_TOPIC),
 	 m_retryAnotherBrokerWhenNotStoreOK(false),
-	 m_maxMessageSize(1024 * 128)
-
+	 m_compressLevel(5)
 {
 	m_pDefaultMQProducerImpl = new DefaultMQProducerImpl(this);
 }
 
 DefaultMQProducer::DefaultMQProducer(const std::string& producerGroup)
-	:m_producerGroup (producerGroup),
-	 m_createTopicKey(MixAll::DEFAULT_TOPIC),
-	 m_defaultTopicQueueNums(4),
+	:m_defaultTopicQueueNums(4),
 	 m_sendMsgTimeout(3000),
 	 m_compressMsgBodyOverHowmuch(1024 * 4),
+	 m_maxMessageSize(1024 * 128),
+	 m_producerGroup (producerGroup),
+	 m_createTopicKey(MixAll::DEFAULT_TOPIC),
 	 m_retryAnotherBrokerWhenNotStoreOK(false),
-	 m_maxMessageSize(1024 * 128)
+	 m_compressLevel(5)
 {
 	m_pDefaultMQProducerImpl = new DefaultMQProducerImpl(this);
 }
@@ -95,7 +98,6 @@ void DefaultMQProducer::sendOneway(Message& msg, MessageQueue& mq)
 
 SendResult DefaultMQProducer::send(Message& msg, MessageQueueSelector* pSelector, void* arg)
 {
-
 	return m_pDefaultMQProducerImpl->send(msg,pSelector,arg);
 }
 
@@ -235,4 +237,16 @@ int DefaultMQProducer::getDefaultTopicQueueNums()
 void DefaultMQProducer::setDefaultTopicQueueNums(int defaultTopicQueueNums)
 {
 	m_defaultTopicQueueNums = defaultTopicQueueNums;
+}
+
+int DefaultMQProducer::getCompressLevel()
+{
+	return m_compressLevel;
+}
+
+void DefaultMQProducer::setCompressLevel( int compressLevel )
+{
+	assert(compressLevel >=0 && compressLevel <= 9 || compressLevel == -1);
+
+	m_compressLevel = compressLevel;
 }

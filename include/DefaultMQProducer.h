@@ -86,6 +86,9 @@ public:
 	int getCompressMsgBodyOverHowmuch();
 	void setCompressMsgBodyOverHowmuch(int compressMsgBodyOverHowmuch);
 
+	int getCompressLevel();
+	void setCompressLevel(int compressLevel);
+
 	bool isRetryAnotherBrokerWhenNotStoreOK();
 	void setRetryAnotherBrokerWhenNotStoreOK(bool retryAnotherBrokerWhenNotStoreOK);
 
@@ -112,6 +115,7 @@ private:
 	// 消息已经成功写入Master，但是刷盘超时或者同步到Slave失败，则尝试重试另一个Broker，不建议修改默认值<br>
 	//顺序消息无效	
 	bool m_retryAnotherBrokerWhenNotStoreOK;
+	int m_compressLevel;
 };
 
 #endif

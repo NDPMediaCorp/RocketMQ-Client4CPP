@@ -33,6 +33,7 @@
 #include "MessageDecoder.h"
 #include "MQProtos.h"
 #include "RemotingCommand.h"
+#include "UtilAll.h"
 
 DefaultMQProducerImpl::DefaultMQProducerImpl(DefaultMQProducer* pDefaultMQProducer)
 	:m_pDefaultMQProducer(pDefaultMQProducer),
@@ -675,6 +676,24 @@ TopicPublishInfo DefaultMQProducerImpl::tryToFindTopicPublishInfo(const std::str
 
 bool DefaultMQProducerImpl::tryToCompressMessage(Message& msg)
 {
+	const char* body = msg.getBody();
+	if (body != NULL)
+	{
+		if (msg.getBodyLen() >= m_pDefaultMQProducer->getCompressMsgBodyOverHowmuch())
+		{
+			unsigned char* pOut;
+			int outLen;
+
+			if (UtilAll::compress(body,msg.getBodyLen(),&pOut,&outLen,m_pDefaultMQProducer->getCompressLevel()))
+			{
+				msg.setBody((char*)pOut,outLen);
+				free(pOut);
+
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
