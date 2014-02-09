@@ -207,8 +207,8 @@ void DefaultMQPushConsumerImpl::persistConsumerOffset()
 		makeSureStateOK();
 
 		std::set<MessageQueue> mqs;
-		std::map<MessageQueue, ProcessQueue>& mqps = m_pRebalanceImpl->getProcessQueueTable();
-		std::map<MessageQueue, ProcessQueue>::iterator it = mqps.begin();
+		std::map<MessageQueue, ProcessQueue*>& mqps = m_pRebalanceImpl->getProcessQueueTable();
+		std::map<MessageQueue, ProcessQueue*>::iterator it = mqps.begin();
 		for (;it!= mqps.end();it++)
 		{
 			mqs.insert(it->first);

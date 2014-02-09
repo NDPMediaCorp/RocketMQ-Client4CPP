@@ -16,6 +16,12 @@
 
 #include "PullRequest.h"
 
+
+PullRequest::~PullRequest()
+{
+
+}
+
 std::string PullRequest::getConsumerGroup()
 {
 	return m_consumerGroup;
