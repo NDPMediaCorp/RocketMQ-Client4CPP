@@ -33,9 +33,9 @@ public:
 	virtual void start()=0;
 	virtual void shutdown()=0;
 	virtual void updateCorePoolSize(int corePoolSize)=0;
-	virtual void submitConsumeRequest(std::list<MessageExt*>& msgs,
-									  ProcessQueue& pProcessQueue,
-									  MessageQueue& pMessageQueue,
+	virtual void submitConsumeRequest(std::list<MessageExt*>* pMsgs,
+									  ProcessQueue* pProcessQueue,
+									  MessageQueue* pMessageQueue,
 									  bool dispathToConsume)=0;
 };
 

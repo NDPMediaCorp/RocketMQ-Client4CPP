@@ -245,3 +245,75 @@ CommandCustomHeader* PullMessageResponseHeader::Decode(char* pData,int len)
 
 	return h;
 }
+
+GetConsumerListByGroupRequestHeader::GetConsumerListByGroupRequestHeader()
+{
+
+}
+
+GetConsumerListByGroupRequestHeader::~GetConsumerListByGroupRequestHeader()
+{
+
+}
+
+void GetConsumerListByGroupRequestHeader::Encode( std::string& outData )
+{
+	std::stringstream ss;
+
+	ss<<"{"<<"\"consumerGroup\":"<<"\""<<consumerGroup<<"\"}";
+
+	outData = ss.str();
+}
+
+CommandCustomHeader* GetConsumerListByGroupRequestHeader::Decode( char* pData,int len )
+{
+	return NULL;
+}
+
+
+GetConsumerListByGroupResponseHeader::GetConsumerListByGroupResponseHeader()
+{
+
+}
+
+GetConsumerListByGroupResponseHeader::~GetConsumerListByGroupResponseHeader()
+{
+
+}
+
+void GetConsumerListByGroupResponseHeader::Encode( std::string& outData )
+{
+	outData="{}";
+}
+
+CommandCustomHeader* GetConsumerListByGroupResponseHeader::Decode( char* pData,int len )
+{
+	return new GetConsumerListByGroupResponseHeader();
+}
+
+ConsumerSendMsgBackRequestHeader::ConsumerSendMsgBackRequestHeader()
+{
+
+}
+
+ConsumerSendMsgBackRequestHeader::~ConsumerSendMsgBackRequestHeader()
+{
+
+}
+
+void ConsumerSendMsgBackRequestHeader::Encode( std::string& outData )
+{
+	std::stringstream ss;
+
+	ss<<"{"<<"\"offset\":"<<"\""<<offset<<"\","
+		<<"\"group\":"<<"\""<<group<<"\","
+		<<"\"delayLevel\":"<<"\""<<delayLevel<<"\""
+		<<"}";
+
+	outData = ss.str();
+}
+
+CommandCustomHeader* ConsumerSendMsgBackRequestHeader::Decode( char* pData,int len )
+{
+	return new ConsumerSendMsgBackRequestHeader();
+}

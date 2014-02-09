@@ -46,6 +46,22 @@ DefaultMQPushConsumer::DefaultMQPushConsumer()
 DefaultMQPushConsumer::DefaultMQPushConsumer(const std::string& consumerGroup)
 {
 	m_consumerGroup = consumerGroup;
+	m_messageModel = CLUSTERING;
+	m_consumeFromWhere = CONSUME_FROM_LAST_OFFSET;
+	m_pAllocateMessageQueueStrategy ;
+	m_pMessageListener;
+	m_consumeThreadMin = 10;
+	m_consumeThreadMax = 20;
+	m_consumeConcurrentlyMaxSpan = 2000;
+	m_pullThresholdForQueue = 1000;
+	m_pullInterval = 0;
+	m_consumeMessageBatchMaxSize = 1;
+	m_pullBatchSize = 32;
+}
+
+DefaultMQPushConsumer::~DefaultMQPushConsumer()
+{
+
 }
 
 //MQAdmin

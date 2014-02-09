@@ -164,6 +164,9 @@
     <ClCompile Include="..\src\kpr\TimerThread.cpp">
       <Filter>kpr</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\protocol\LockBatchBody.cpp">
+      <Filter>protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\producer\LocalTransactionExecuter.h">
@@ -272,9 +275,6 @@
       <Filter>cosumer</Filter>
     </ClInclude>
     <ClInclude Include="..\src\consumer\ConsumeMessageService.h">
-      <Filter>cosumer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\consumer\MessageListener.h">
       <Filter>cosumer</Filter>
     </ClInclude>
     <ClInclude Include="..\src\kpr\AtomicValue.h">
@@ -499,6 +499,15 @@
     </ClInclude>
     <ClInclude Include="..\src\consumer\AllocateMessageQueueStrategyInner.h">
       <Filter>cosumer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\MessageListener.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\protocol\LockBatchBody.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\protocol\GetConsumerListByGroupResponseBody.h">
+      <Filter>protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

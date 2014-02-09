@@ -59,7 +59,7 @@ public:
 	void doRebalance();
 
 	std::map<std::string, SubscriptionData>& getSubscriptionInner();
-	std::map<MessageQueue, ProcessQueue>& getProcessQueueTable();
+	std::map<MessageQueue, ProcessQueue*>& getProcessQueueTable();
 	std::map<std::string, std::set<MessageQueue> >& getTopicSubscribeInfoTable();
 
 	std::string& getConsumerGroup();
@@ -82,7 +82,7 @@ private:
 
 protected:
 	// 分配好的队列，消息存储也在这里
-	std::map<MessageQueue, ProcessQueue> m_processQueueTable;
+	std::map<MessageQueue, ProcessQueue*> m_processQueueTable;
 	// 可以订阅的所有队列（定时从Name Server更新最新版本）
 	std::map<std::string, std::set<MessageQueue> > m_topicSubscribeInfoTable;
 	// 订阅关系，用户配置的原始数据

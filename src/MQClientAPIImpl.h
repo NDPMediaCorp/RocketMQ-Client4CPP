@@ -35,6 +35,7 @@
 #include "CommunicationMode.h"
 #include "TopAddressing.h"
 #include "HeartbeatData.h"
+#include "LockBatchBody.h"
 
 class TcpRemotingClient;
 class QueryConsumerOffsetRequestHeader;
@@ -43,8 +44,6 @@ class EndTransactionRequestHeader;
 class SendMessageRequestHeader;
 class PullMessageRequestHeader;
 class QueryMessageRequestHeader;
-class LockBatchRequestBody;
-class UnlockBatchRequestBody;
 class ProducerConnection;
 class ConsumerConnection;
 class ClusterInfo;

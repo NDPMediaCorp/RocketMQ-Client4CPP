@@ -68,6 +68,11 @@ public:
 		return InterlockedExchangeAdd((T*)&value,-1*n);
 	}
 
+	inline T CompareAndSet(T comparand,T exchange)
+	{
+		return InterlockedCompareExchange((T*)&value, exchange, comparand);
+	}
+
 	inline T operator++(int)
 	{
 		return fetchAndAdd(1);
@@ -173,6 +178,11 @@ public:
 	void Set(T n)
 	{
 		__sync_lock_test_and_set((T*)&value,n);
+	}
+
+	inline T CompareAndSet(T comparand,T exchange)
+	{
+		return __sync_val_compare_and_swap((T*)&value, comparand, exchange);
 	}
 
 private:

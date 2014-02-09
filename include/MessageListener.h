@@ -28,7 +28,7 @@
 * 应用不可以直接继承此接口
 *
 */
-class MessageListener
+class ROCKETMQCLIENT_API MessageListener
 {
 public:
 	virtual ~MessageListener(){}
@@ -57,7 +57,7 @@ typedef struct tagConsumeOrderlyContext
 	long suspendCurrentQueueTimeMillis;
 }ConsumeOrderlyContext;
 
-class MessageListenerOrderly : public MessageListener
+class ROCKETMQCLIENT_API MessageListenerOrderly : public MessageListener
 {
 	/**
 	* 方法抛出异常等同于返回 ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT<br>
@@ -70,7 +70,8 @@ class MessageListenerOrderly : public MessageListener
 	* @return
 	*/
 public:
-	ConsumeOrderlyStatus consumeMessage(std::list<MessageExt>& msgs, ConsumeOrderlyContext& context);
+	virtual ConsumeOrderlyStatus consumeMessage(std::list<MessageExt*>& msgs,
+												ConsumeOrderlyContext& context)=0;
 };
 
 enum ConsumeConcurrentlyStatus
@@ -99,8 +100,9 @@ typedef struct tagConsumeConcurrentlyContext
 
 }ConsumeConcurrentlyContext;
 
-class MessageListenerConcurrently : public MessageListener
+class ROCKETMQCLIENT_API MessageListenerConcurrently : public MessageListener
 {
+public:
 	/**
 	* 方法抛出异常等同于返回 ConsumeConcurrentlyStatus.RECONSUME_LATER<br>
 	* P.S: 建议应用不要抛出异常
@@ -111,7 +113,8 @@ class MessageListenerConcurrently : public MessageListener
 	* @param context
 	* @return
 	*/
-	ConsumeConcurrentlyStatus consumeMessage(std::list<MessageExt>& msgs, ConsumeConcurrentlyContext& context);
+	virtual ConsumeConcurrentlyStatus consumeMessage(std::list<MessageExt*>& msgs,
+													ConsumeConcurrentlyContext& context)=0;
 };
 
 #endif

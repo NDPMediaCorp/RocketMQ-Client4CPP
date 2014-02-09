@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sstream>
+
 #include "MessageExt.h"
 #include "MessageSysFlag.h"
 #include "UtilAll.h"
@@ -278,7 +280,8 @@ MessageExt* MessageDecoder::decode(const char* pData, int len, int& offset, bool
 			memcpy(properties,pData + 22*sizeof(int)+bodyLen+1+topicLen+2,propertiesLength);
 			properties[propertiesLength]=0;
 			std::string propertiesString = properties;
-			std::map<std::string, std::string> map = string2messageProperties(propertiesString);
+			std::map<std::string, std::string> map;
+			string2messageProperties(map, propertiesString);
 			msgExt->setProperties(map);
 			delete[] properties;
 		}
@@ -321,12 +324,32 @@ std::list<MessageExt*> MessageDecoder::decodes(const char* pData, int len, bool 
 
 std::string MessageDecoder::messageProperties2String(const std::map<std::string, std::string>& properties)
 {
-	return "";
+	std::stringstream ss;
+
+	std::map<std::string, std::string>::const_iterator it = properties.begin();
+
+	for (; it!=properties.end(); it++)
+	{
+		ss<<it->first<<NAME_VALUE_SEPARATOR<<it->second<<PROPERTY_SEPARATOR;
+	}
+
+	return ss.str();
 }
 
-std::map<std::string, std::string> MessageDecoder::string2messageProperties(std::string properties)
+void MessageDecoder::string2messageProperties(std::map<std::string, std::string>& properties,
+	std::string& propertiesString)
 {
-	std::map<std::string, std::string> prop;
+	std::vector<std::string> out;
+	UtilAll::Split(out,propertiesString, PROPERTY_SEPARATOR);
 
-	return prop;
+	for (size_t i=0;i < out.size();i++)
+	{
+		std::vector<std::string> outValue;
+		UtilAll::Split(outValue,out[i],NAME_VALUE_SEPARATOR);
+		
+		if (outValue.size() == 2)
+		{
+			properties[outValue[0]] = outValue[1];
+		}
+	}
 }

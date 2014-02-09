@@ -31,6 +31,7 @@
 #include "ProducerInvokeCallback.h"
 #include "MQClientException.h"
 #include "SocketUtil.h"
+#include "GetConsumerListByGroupResponseBody.h"
 
 MQClientAPIImpl::MQClientAPIImpl( const RemoteClientConfig& remoteClientConfig,
 	ClientRemotingProcessor* pClientRemotingProcessor)
@@ -294,10 +295,44 @@ std::list<std::string> MQClientAPIImpl::getConsumerIdListByGroup(const std::stri
 																const std::string& consumerGroup,
 																int timeoutMillis)
 {
-	//TODO
-	std::list<std::string> ids;
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	std::string consumerGroupWithProjectGroup = consumerGroup;
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		consumerGroupWithProjectGroup =
+			VirtualEnvUtil::buildWithProjectGroup(consumerGroup, m_projectGroupPrefix);
+	}
 
-	return ids;
+	GetConsumerListByGroupRequestHeader* requestHeader = new GetConsumerListByGroupRequestHeader();
+	requestHeader->consumerGroup = consumerGroupWithProjectGroup;
+	RemotingCommand* request =
+		RemotingCommand::createRequestCommand(GET_CONSUMER_LIST_BY_GROUP_VALUE, requestHeader);
+
+	request->Encode();
+
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+
+	if (response)
+	{
+		switch (response->getCode())
+		{
+		case SUCCESS_VALUE:
+			{
+				if (response->GetBody() != NULL)
+				{
+					GetConsumerListByGroupResponseBody* body =
+						GetConsumerListByGroupResponseBody::Decode((char*)response->GetBody(),response->GetBodyLen());
+					return body->getConsumerIdList();
+				}
+			}
+		default:
+			break;
+		}
+
+		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+	}
+
+	THROW_MQEXCEPTION(MQClientException, "getConsumerIdListByGroup failed",-1);
 }
 
 long long MQClientAPIImpl::getMinOffset(const std::string& addr,
@@ -342,7 +377,64 @@ void MQClientAPIImpl::updateConsumerOffsetOneway(const std::string& addr,
 
 void MQClientAPIImpl::sendHearbeat(const std::string& addr, HeartbeatData* pHeartbeatData, int timeoutMillis)
 {
-	//TODO
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		std::set<ConsumerData>& consumerDatas = pHeartbeatData->getConsumerDataSet();
+		std::set<ConsumerData>::iterator it = consumerDatas.begin();
+
+		for (; it!= consumerDatas.end();it++)
+		{
+			ConsumerData& consumerData = (ConsumerData&)(*it);
+
+			consumerData.groupName = VirtualEnvUtil::buildWithProjectGroup(consumerData.groupName,
+				m_projectGroupPrefix);
+			std::set<SubscriptionData>& subscriptionDatas = consumerData.subscriptionDataSet;
+			std::set<SubscriptionData>::iterator itsub=subscriptionDatas.begin();
+
+			for (; itsub != subscriptionDatas.end();itsub++)
+			{
+				SubscriptionData& subscriptionData = (SubscriptionData&)(*itsub);
+				subscriptionData.setTopic(VirtualEnvUtil::buildWithProjectGroup(
+					subscriptionData.getTopic(), m_projectGroupPrefix));
+			}
+		}
+
+		std::set<ProducerData>& producerDatas = pHeartbeatData->getProducerDataSet();
+		std::set<ProducerData>::iterator itp = producerDatas.begin();
+		for (;itp!=producerDatas.end();itp++)
+		{
+			ProducerData& producerData = (ProducerData&)(*itp);
+			producerData.groupName = VirtualEnvUtil::buildWithProjectGroup(producerData.groupName,
+				m_projectGroupPrefix);
+		}
+	}
+
+	RemotingCommand* request = RemotingCommand::createRequestCommand(HEART_BEAT_VALUE, NULL);
+	
+	std::string body;
+	pHeartbeatData->Encode(body);
+	request->SetBody((char*)body.data(),body.length(),true);
+
+	request->Encode();
+
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	if (response)
+	{
+		switch (response->getCode())
+		{
+		case SUCCESS_VALUE:
+			{
+				return;
+			}
+		default:
+			break;
+		}
+
+		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+	}
+
+	THROW_MQEXCEPTION(MQClientException, "sendHearbeat failed",-1);
 }
 
 void MQClientAPIImpl::unregisterClient(const std::string& addr,
@@ -381,28 +473,161 @@ void MQClientAPIImpl::consumerSendMessageBack(MessageExt& msg,
 											  int delayLevel,
 											  int timeoutMillis)
 {
-	//TODO
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	std::string consumerGroupWithProjectGroup = consumerGroup;
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		consumerGroupWithProjectGroup =
+			VirtualEnvUtil::buildWithProjectGroup(consumerGroup, m_projectGroupPrefix);
+		msg.setTopic(VirtualEnvUtil::buildWithProjectGroup(msg.getTopic(), m_projectGroupPrefix));
+	}
+
+	ConsumerSendMsgBackRequestHeader* requestHeader = new ConsumerSendMsgBackRequestHeader();
+	RemotingCommand* request =
+		RemotingCommand::createRequestCommand(CONSUMER_SEND_MSG_BACK_VALUE,
+		requestHeader);
+	requestHeader->group = consumerGroupWithProjectGroup;
+	requestHeader->offset = msg.getCommitLogOffset();
+	requestHeader->delayLevel = delayLevel;
+
+	std::string addr = socketAddress2IPPort(msg.getStoreHost());
+
+	request->Encode();
+
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	if (response)
+	{
+
+		switch (response->getCode())
+		{
+		case SUCCESS_VALUE:
+			return;
+		default:
+			break;
+		}
+
+		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+	}
+
+	THROW_MQEXCEPTION(MQClientException, "consumerSendMessageBack failed",-1);
 }
 
 std::set<MessageQueue> MQClientAPIImpl::lockBatchMQ(const std::string& addr,
 													LockBatchRequestBody* pRequestBody,
 													int timeoutMillis)
 {
-	//TODO
-	std::set<MessageQueue> mqs;
-	return mqs;
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		pRequestBody->setConsumerGroup((VirtualEnvUtil::buildWithProjectGroup(
+			pRequestBody->getConsumerGroup(), m_projectGroupPrefix)));
+		std::set<MessageQueue>& messageQueues = pRequestBody->getMqSet();
+		std::set<MessageQueue>::iterator it = messageQueues.begin();
+
+		for (; it != messageQueues.end();it++)
+		{
+			MessageQueue& messageQueue = (MessageQueue&)(*it);
+			messageQueue.setTopic(VirtualEnvUtil::buildWithProjectGroup(messageQueue.getTopic(),
+				m_projectGroupPrefix));
+		}
+	}
+
+	RemotingCommand* request = RemotingCommand::createRequestCommand(LOCK_BATCH_MQ_VALUE, NULL);
+	
+	std::string body;
+	pRequestBody->Encode(body);
+	request->SetBody((char*)body.data(),body.length(),true);
+	request->Encode();
+
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	if (response)
+	{
+		switch (response->getCode())
+		{
+		case SUCCESS_VALUE:
+			{
+				LockBatchResponseBody* responseBody =
+					LockBatchResponseBody::Decode((char*)response->GetBody(),response->GetBodyLen());
+				std::set<MessageQueue> messageQueues = responseBody->getLockOKMQSet();
+
+				// 清除虚拟运行环境相关的projectGroupPrefix
+				if (!UtilAll::isBlank(m_projectGroupPrefix))
+				{
+					std::set<MessageQueue>::iterator it = messageQueues.begin();
+
+					for (; it != messageQueues.end();it++)
+					{
+						MessageQueue& messageQueue = (MessageQueue&)(*it);
+						messageQueue.setTopic(VirtualEnvUtil::clearProjectGroup(messageQueue.getTopic(),
+							m_projectGroupPrefix));
+					}
+				}
+				return messageQueues;
+			}
+		default:
+			break;
+		}
+
+		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+	}
+
+	THROW_MQEXCEPTION(MQClientException, "lockBatchMQ failed",-1);
 }
 
 void MQClientAPIImpl::unlockBatchMQ(const std::string& addr,
-									UnlockBatchRequestBody* pRequestBody,
-									int timeoutMillis,
-									bool oneway)
+	UnlockBatchRequestBody* pRequestBody,
+	int timeoutMillis,
+	bool oneway)
 {
-	//TODO
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		pRequestBody->setConsumerGroup((VirtualEnvUtil::buildWithProjectGroup(
+			pRequestBody->getConsumerGroup(), m_projectGroupPrefix)));
+		std::set<MessageQueue>& messageQueues = pRequestBody->getMqSet();
+		std::set<MessageQueue>::iterator it = messageQueues.begin();
+
+		for (; it != messageQueues.end();it++)
+		{
+			MessageQueue& messageQueue = (MessageQueue&)(*it);
+			messageQueue.setTopic(VirtualEnvUtil::buildWithProjectGroup(messageQueue.getTopic(),
+				m_projectGroupPrefix));
+		}
+	}
+
+	RemotingCommand* request = RemotingCommand::createRequestCommand(UNLOCK_BATCH_MQ_VALUE, NULL);
+
+	std::string body;
+	pRequestBody->Encode(body);
+	request->SetBody((char*)body.data(),body.length(),true);
+	request->Encode();
+
+	if (oneway)
+	{
+		m_pRemotingClient->invokeOneway(addr, *request, timeoutMillis);
+	}
+	else
+	{
+		RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+		if (response)
+		{
+			switch (response->getCode())
+			{
+			case SUCCESS_VALUE:
+				return;
+			default:
+				break;
+			}
+
+			THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		}
+
+		THROW_MQEXCEPTION(MQClientException, "unlockBatchMQ failed",-1);
+	}
 }
 
 TopicStatsTable MQClientAPIImpl::getTopicStatsInfo(const std::string& addr,
-													const std::string& topic,
+	const std::string& topic,
 													int timeoutMillis)
 {
 	//TODO
@@ -438,7 +663,8 @@ ConsumerConnection* MQClientAPIImpl::getConsumerConnectionList(const std::string
 KVTable MQClientAPIImpl::getBrokerRuntimeInfo( const std::string& addr,  int timeoutMillis)
 {
 	//TODO
-	KVTable kv;	return kv;
+	KVTable kv;
+	return kv;
 }
 
 void MQClientAPIImpl::updateBrokerConfig( const std::string& addr,

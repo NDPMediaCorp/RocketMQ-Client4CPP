@@ -40,7 +40,7 @@ public:
 	virtual ~AllocateMessageQueueAveragely() {}
 	virtual std::vector<MessageQueue>* allocate(const std::string& currentCID,
 		std::vector<MessageQueue>& mqAll,
-		std::vector<std::string>& cidAll)
+		std::list<std::string>& cidAll)
 	{
 		if (currentCID.empty())
 		{
@@ -60,9 +60,10 @@ public:
 		int index = -1;
 		int cidAllSize = cidAll.size();
 
-		for(int i=0;i<cidAllSize;i++)
+		std::list<std::string>::iterator it = cidAll.begin();
+		for(int i=0; it != cidAll.end();it++,i++)
 		{
-			if (cidAll[i] == currentCID)
+			if (*it == currentCID)
 			{
 				index = i;
 				break;
@@ -115,7 +116,7 @@ public:
 	virtual ~AllocateMessageQueueByConfig() {}
 	virtual std::vector<MessageQueue>* allocate(const std::string& currentCID,
 		std::vector<MessageQueue>& mqAll,
-		std::vector<std::string>& cidAll)
+		std::list<std::string>& cidAll)
 	{
 		return NULL;
 	}
@@ -142,7 +143,7 @@ public:
 	virtual ~AllocateMessageQueueByMachineRoom() {}
 	virtual std::vector<MessageQueue>* allocate(const std::string& currentCID,
 		std::vector<MessageQueue>& mqAll,
-		std::vector<std::string>& cidAll)
+		std::list<std::string>& cidAll)
 	{
 		return NULL;
 	}

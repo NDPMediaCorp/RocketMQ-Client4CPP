@@ -57,6 +57,28 @@ public:
 
 		return out.size();
 	}
+	
+	static int Split(std::vector<std::string>& out,const std::string& in,const char delimiter )
+	{
+		std::string::size_type left=0;
+		for(size_t i=1; i< in.size(); i++)
+		{
+			std::string::size_type right = in.find(delimiter,left);
+
+			if (right = std::string::npos)
+			{
+				break;
+			}
+
+			out.push_back(in.substr(left,right-left));
+
+			left = right+1;
+		}
+
+		out.push_back(in.substr(left));
+
+		return out.size();
+	}
 
 	static std::string Trim(const std::string& str)
 	{

@@ -70,6 +70,7 @@ bool SplitURL(const std::string& serverURL, std::string &addr, short &nPort);
 */
 sockaddr string2SocketAddress(const std::string& addr);
 std::string socketAddress2String(sockaddr addr);
+std::string socketAddress2IPPort(sockaddr addr);
 std::string getHostName(sockaddr addr);
 std::string getLocalAddress();
 

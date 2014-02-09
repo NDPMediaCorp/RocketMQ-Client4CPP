@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #include "RocketMQClient.h"
 #include "MessageQueue.h"
@@ -43,7 +44,7 @@ public:
 	virtual ~AllocateMessageQueueStrategy() {}
 	virtual std::vector<MessageQueue>* allocate(const std::string& currentCID,
 			std::vector<MessageQueue>& mqAll,
-			std::vector<std::string>& cidAll)=0;
+			std::list<std::string>& cidAll)=0;
 };
 
 #endif

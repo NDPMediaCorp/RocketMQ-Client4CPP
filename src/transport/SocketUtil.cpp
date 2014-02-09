@@ -306,3 +306,15 @@ unsigned long long n2hll(unsigned long long v)
 {
 	return swapll(v);
 }
+
+std::string socketAddress2IPPort( sockaddr addr )
+{
+	sockaddr_in in;
+	memcpy(&in,&addr,sizeof(sockaddr));
+
+	char tmp[32];
+	sprintf(tmp,"%s:%d",inet_ntoa(in.sin_addr),ntohs(in.sin_port));
+
+	std::string ipport = tmp;
+	return ipport;
+}

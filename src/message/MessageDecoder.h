@@ -43,7 +43,8 @@ public:
 	static std::list<MessageExt*> decodes(const char* pData, int len, bool readBody);
 
 	static std::string messageProperties2String(const std::map<std::string, std::string>& properties);
-	static std::map<std::string, std::string> string2messageProperties(std::string properties);
+	static void string2messageProperties(std::map<std::string, std::string>& properties,
+										std::string& propertiesString);
 
 public:
 	/**

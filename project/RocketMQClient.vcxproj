@@ -65,6 +65,7 @@
     <ClCompile Include="..\src\producer\DefaultMQProducerImpl.cpp" />
     <ClCompile Include="..\src\producer\ProducerInvokeCallback.cpp" />
     <ClCompile Include="..\src\protocol\CommandCustomHeader.cpp" />
+    <ClCompile Include="..\src\protocol\LockBatchBody.cpp" />
     <ClCompile Include="..\src\protocol\RemotingCommand.cpp" />
     <ClCompile Include="..\src\transport\ResponseFuture.cpp" />
     <ClCompile Include="..\src\transport\SocketUtil.cpp" />
@@ -81,6 +82,7 @@
     <ClInclude Include="..\include\DefaultMQPushConsumer.h" />
     <ClInclude Include="..\include\Message.h" />
     <ClInclude Include="..\include\MessageExt.h" />
+    <ClInclude Include="..\include\MessageListener.h" />
     <ClInclude Include="..\include\MessageQueue.h" />
     <ClInclude Include="..\include\MessageQueueListener.h" />
     <ClInclude Include="..\include\MQAdmin.h" />
@@ -127,7 +129,6 @@
     <ClInclude Include="..\src\consumer\DefaultMQPullConsumerImpl.h" />
     <ClInclude Include="..\src\consumer\DefaultMQPushConsumerImpl.h" />
     <ClInclude Include="..\src\consumer\LocalFileOffsetStore.h" />
-    <ClInclude Include="..\src\consumer\MessageListener.h" />
     <ClInclude Include="..\src\consumer\MessageQueueLock.h" />
     <ClInclude Include="..\src\consumer\MQConsumerInner.h" />
     <ClInclude Include="..\src\consumer\ProcessQueue.h" />
@@ -174,8 +175,10 @@
     <ClInclude Include="..\src\producer\TransactionCheckListener.h" />
     <ClInclude Include="..\src\producer\TransactionMQProducer.h" />
     <ClInclude Include="..\src\protocol\CommandCustomHeader.h" />
+    <ClInclude Include="..\src\protocol\GetConsumerListByGroupResponseBody.h" />
     <ClInclude Include="..\src\protocol\HeartbeatData.h" />
     <ClInclude Include="..\src\protocol\KVTable.h" />
+    <ClInclude Include="..\src\protocol\LockBatchBody.h" />
     <ClInclude Include="..\src\protocol\MQProtos.h" />
     <ClInclude Include="..\src\protocol\RemotingCommand.h" />
     <ClInclude Include="..\src\protocol\RemotingSerializable.h" />

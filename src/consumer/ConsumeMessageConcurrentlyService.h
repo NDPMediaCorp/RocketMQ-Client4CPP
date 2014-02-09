@@ -26,11 +26,49 @@
 #include "ConsumerStatManage.h"
 #include "MessageExt.h"
 #include "MessageListener.h"
+#include "ProcessQueue.h"
+#include "ThreadPool.h"
+#include "TimerThread.h"
 
 class DefaultMQPushConsumerImpl;
 class DefaultMQPushConsumer;
 class MessageListenerConcurrently;
+class ConsumeMessageConcurrentlyService;
 
+class ConsumeConcurrentlyRequest: public ThreadPoolWork
+{
+public:
+	ConsumeConcurrentlyRequest(std::list<MessageExt*>* pMsgs,
+		ProcessQueue* pProcessQueue,
+		MessageQueue* pMessageQueue,
+		ConsumeMessageConcurrentlyService* pService);
+	~ConsumeConcurrentlyRequest();
+	virtual void Do();
+
+	std::list<MessageExt*>* getMsgs()
+	{
+		return m_pMsgs;
+	}
+
+	ProcessQueue* getProcessQueue()
+	{
+		return m_pProcessQueue;
+	}
+
+	MessageQueue* getMessageQueue()
+	{
+		return m_pMessageQueue;
+	}
+
+private:
+	void resetRetryTopic(std::list<MessageExt*>* pMsgs);
+
+private:
+	std::list<MessageExt*>* m_pMsgs;
+	ProcessQueue* m_pProcessQueue;
+	MessageQueue* m_pMessageQueue;
+	ConsumeMessageConcurrentlyService* m_pService;
+};
 
 /**
 * 并发消费消息服务
@@ -44,28 +82,36 @@ public:
 
 	void start();
 	void shutdown();
-	ConsumerStat getConsumerStat();
+	ConsumerStat& getConsumerStat();
 	bool sendMessageBack(MessageExt& msg, ConsumeConcurrentlyContext& context);
-
+	void processConsumeResult(ConsumeConcurrentlyStatus status,
+							  ConsumeConcurrentlyContext& context,
+							  ConsumeConcurrentlyRequest& consumeRequest);
 	/**
 	* 在Consumer本地定时线程中定时重试
 	*/
-	void submitConsumeRequestLater(std::list<MessageExt>& msgs,
-		ProcessQueue& processQueue,
-		MessageQueue& messageQueue);
+	void submitConsumeRequestLater(std::list<MessageExt*>* pMsgs,
+		ProcessQueue* pProcessQueue,
+		MessageQueue* pMessageQueue);
 
-	void submitConsumeRequest(std::list<MessageExt*>& msgs,
-		ProcessQueue& processQueue,
-		MessageQueue& messageQueue,
+	void submitConsumeRequest(std::list<MessageExt*>* pMsgs,
+		ProcessQueue* pProcessQueue,
+		MessageQueue* pMessageQueue,
 		bool dispathToConsume);
 
 	void updateCorePoolSize(int corePoolSize);
+
+	std::string& getConsumerGroup();
+	MessageListenerConcurrently* getMessageListener();
+	DefaultMQPushConsumerImpl* getDefaultMQPushConsumerImpl();
 
 private:
 	DefaultMQPushConsumerImpl* m_pDefaultMQPushConsumerImpl;
 	DefaultMQPushConsumer* m_pDefaultMQPushConsumer;
 	MessageListenerConcurrently* m_pMessageListener;
 	std::string m_consumerGroup;
+	kpr::ThreadPool* m_pConsumeExecutor;
+	kpr::TimerThread_var m_scheduledExecutorService;
 };
 
 #endif

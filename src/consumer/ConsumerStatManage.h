@@ -43,12 +43,12 @@ typedef struct
 class ConsumerStatManager
 {
 public:
-	const ConsumerStat& getConsumertat()
+	ConsumerStat& getConsumertat()
 	{
 		return m_consumertat;
 	}
 
-	const std::list<ConsumerStat>& getSnapshotList()
+	std::list<ConsumerStat>& getSnapshotList()
 	{
 		return m_snapshotList;
 	}

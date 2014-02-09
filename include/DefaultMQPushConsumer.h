@@ -38,6 +38,7 @@ class ROCKETMQCLIENT_API DefaultMQPushConsumer : public ClientConfig ,public MQP
 public:
 	DefaultMQPushConsumer();
 	DefaultMQPushConsumer(const std::string& consumerGroup);
+	~DefaultMQPushConsumer();
 
 	//MQAdmin
 	void createTopic(const std::string& key, const std::string& newTopic, int queueNum);

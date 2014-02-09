@@ -462,6 +462,7 @@ void DefaultMQPushConsumerImpl::start()
 	updateTopicSubscribeInfoWhenSubscriptionChanged();
 	m_pMQClientFactory->sendHeartbeatToAllBrokerWithLock();
 	m_pMQClientFactory->rebalanceImmediately();
+	//TODO ×èÈû£¬²»ÄÜÍË³ö
 }
 
 void DefaultMQPushConsumerImpl::checkConfig()

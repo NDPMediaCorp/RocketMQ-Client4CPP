@@ -131,4 +131,40 @@ public:
 	long long maxOffset;
 };
 
+class GetConsumerListByGroupRequestHeader : public CommandCustomHeader
+{
+public:
+	GetConsumerListByGroupRequestHeader();
+	~GetConsumerListByGroupRequestHeader();
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+
+public:
+	std::string consumerGroup;
+};
+
+class GetConsumerListByGroupResponseHeader : public CommandCustomHeader
+{
+public:
+	GetConsumerListByGroupResponseHeader();
+	~GetConsumerListByGroupResponseHeader();
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+};
+
+class ConsumerSendMsgBackRequestHeader : public CommandCustomHeader
+{
+public:
+	ConsumerSendMsgBackRequestHeader();
+	~ConsumerSendMsgBackRequestHeader();
+	
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+
+public:
+	long long offset;
+	std::string group;
+	int delayLevel;
+};
+
 #endif

@@ -19,6 +19,8 @@
 
 #include <string>
 
+#include "AtomicValue.h"
+
 /**
  * 各种方法大杂烩
  *
@@ -43,6 +45,7 @@ public:
 	static const std::string  ROCKETMQ_HOME_PROPERTY;
 	static const std::string MESSAGE_COMPRESS_LEVEL;
 	static std::string getRetryTopic(const std::string& consumerGroup);
+	static bool compareAndIncreaseOnly(AtomicLong& target, long value);
 };
 
 #endif

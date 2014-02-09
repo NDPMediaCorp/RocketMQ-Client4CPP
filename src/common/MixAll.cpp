@@ -36,3 +36,21 @@ std::string MixAll::getRetryTopic(const std::string& consumerGroup)
 {
 	return RETRY_GROUP_TOPIC_PREFIX + consumerGroup;
 }
+
+bool MixAll::compareAndIncreaseOnly(AtomicLong& target, long value)
+{
+	long current = target.Get();
+	while (value > current)
+	{
+		long tmp = target.CompareAndSet(current, value);
+		
+		if (tmp == current)
+		{
+			return true;
+		}
+
+		current = target.Get();
+	}
+
+	return false;
+}
