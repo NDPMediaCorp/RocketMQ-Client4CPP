@@ -57,6 +57,12 @@ int MakeSocketNonblocking (SOCKET fd)
 #endif
 }
 
+int SetTcpNoDelay(SOCKET fd)
+{
+	int flag = 1;
+	return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&flag, sizeof(flag));
+}
+
 bool SplitURL(const std::string& serverURL, std::string &addr, short &nPort)
 {
 	size_t pos = serverURL.find(':');

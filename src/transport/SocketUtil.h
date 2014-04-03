@@ -64,6 +64,8 @@ typedef int SOCKET;
 
 int SocketInit();
 int MakeSocketNonblocking (SOCKET fd);
+int SetTcpNoDelay(SOCKET fd);
+
 bool SplitURL(const std::string& serverURL, std::string &addr, short &nPort);
 /**
 * IP:PORT

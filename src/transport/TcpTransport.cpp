@@ -117,6 +117,12 @@ int TcpTransport::Connect(const std::string &strServerURL)
 		return CLIENT_ERROR_CONNECT;
 	}
 
+	if (SetTcpNoDelay(m_sfd) == -1)
+	{
+		closesocket(m_sfd);
+		return CLIENT_ERROR_CONNECT;
+	}
+	
 	if (connect(m_sfd,(struct sockaddr*)&sa, sizeof(sockaddr)) == -1)
 	{
 		int err = NET_ERROR;
