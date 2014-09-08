@@ -893,7 +893,7 @@ SendResult* MQClientAPIImpl::sendMessageSync(const std::string& addr,
 											 RemotingCommand& request)
 {
 	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
-	return processSendResponse(brokerName, msg, response);
+	return processSendResponse(brokerName, msg.getTopic(), response);
 }
 
 void MQClientAPIImpl::sendMessageAsync(const std::string& addr,
@@ -903,12 +903,12 @@ void MQClientAPIImpl::sendMessageAsync(const std::string& addr,
 										RemotingCommand& request,
 										SendCallback* pSendCallback)
 {
-	ProducerInvokeCallback* callback = new ProducerInvokeCallback(pSendCallback);
+	ProducerInvokeCallback* callback = new ProducerInvokeCallback(pSendCallback,this,msg.getTopic(),brokerName);
 	m_pRemotingClient->invokeAsync(addr, request, timeoutMillis,callback );
 }
 
 SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
-												 Message& msg,
+												const std::string& topic,
 												 RemotingCommand* pResponse)
 {
 	if (pResponse==NULL)
@@ -948,7 +948,7 @@ SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
 
 			SendMessageResponseHeader* responseHeader = (SendMessageResponseHeader*) pResponse->getCommandCustomHeader();
 
-			MessageQueue messageQueue (msg.getTopic(), brokerName, responseHeader->queueId);
+			MessageQueue messageQueue (topic, brokerName, responseHeader->queueId);
 
 			return new SendResult(sendStatus, responseHeader->msgId, messageQueue,
 				responseHeader->queueOffset, m_projectGroupPrefix);
