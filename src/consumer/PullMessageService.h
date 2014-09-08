@@ -18,6 +18,7 @@
 
 #include "ServiceThread.h"
 #include <list>
+#include "TimerThread.h"
 
 class MQClientFactory;
 class MQConsumerInner;
@@ -43,16 +44,38 @@ public:
 	*/
 	void executePullRequestImmediately(PullRequest* pPullRequest);
 
+	
 
 	std::string getServiceName();
 
 	void Run();
+
+	class MyTimeHandler :public kpr::TimerHandler
+	{
+	public:
+		MyTimeHandler(PullMessageService* pService, PullRequest* pPullRequest)
+			:m_pService(pService),m_pPullRequest(pPullRequest)
+		{
+
+		}
+
+		void OnTimeOut(unsigned int timerID)
+		{
+			m_pService->executePullRequestImmediately(m_pPullRequest);
+			delete this;
+		}
+
+	private:
+		PullMessageService* m_pService;
+		PullRequest* m_pPullRequest;
+	};
 private:
 	void pullMessage(PullRequest* pPullRequest);
 
 private:
 	std::list<PullRequest*> m_pullRequestQueue;
 	MQClientFactory* m_pMQClientFactory;
+	kpr::TimerThread_var m_TimeThread;
 };
 
 #endif

@@ -48,7 +48,7 @@ void RebalancePushImpl::dispatchPullRequest(std::list<PullRequest>& pullRequestL
 	// ÅÉ·¢PullRequest
 	for (;it!=pullRequestList.end();it++)
 	{
-		m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(*it);
+		m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(&*it);
 	}
 }
 

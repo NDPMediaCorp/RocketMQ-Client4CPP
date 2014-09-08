@@ -27,6 +27,7 @@
 #include "ServiceState.h"
 #include "PullResult.h"
 #include "ConsumeMessageHook.h"
+#include "MixAll.h"
 
 class DefaultMQPushConsumer;
 class ConsumeMessageHook;
@@ -40,6 +41,7 @@ class PullRequest;
 class MQClientFactory;
 class PullAPIWrapper;
 class PullMessageService;
+class DefaultMQPushConsumerImplCallback;
 
 /**
 * Push方式的Consumer实现
@@ -118,12 +120,12 @@ private:
 	/**
 	* 立刻执行这个PullRequest
 	*/
-	void executePullRequestImmediately(PullRequest& pullRequest);
+	void executePullRequestImmediately(PullRequest* pullRequest);
 
 	/**
 	* 稍后再执行这个PullRequest
 	*/
-	void executePullRequestLater(PullRequest& pullRequest, long timeDelay);
+	void executePullRequestLater(PullRequest* pullRequest, long timeDelay);
 
 	void makeSureStateOK();	
 	void checkConfig();
@@ -153,9 +155,29 @@ private:
 	ConsumeMessageService* m_pConsumeMessageService;// 消费消息服务
 
 	std::list<ConsumeMessageHook*> m_hookList;//消费每条消息会回调
-
 	friend class PullMessageService;
 	friend class RebalancePushImpl;
+	friend class DefaultMQPushConsumerImplCallback;
+};
+
+#include "PullCallback.h"
+class MQException;
+
+class DefaultMQPushConsumerImplCallback : public PullCallback
+{
+public:
+	DefaultMQPushConsumerImplCallback(SubscriptionData& subscriptionData,
+		DefaultMQPushConsumerImpl* pDefaultMQPushConsumerImpl,
+		PullRequest* pPullRequest);
+
+	void onSuccess(PullResult& pullResult);
+	void onException(MQException& e);
+
+private:
+	SubscriptionData m_subscriptionData;
+	DefaultMQPushConsumerImpl* m_pDefaultMQPushConsumerImpl;
+	PullRequest* m_pPullRequest;
+	unsigned long long m_beginTimestamp;
 };
 
 #endif

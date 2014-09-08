@@ -26,6 +26,7 @@ PullMessageService::PullMessageService(MQClientFactory* pMQClientFactory)
 	:ServiceThread("PullMessageService"),
 	 m_pMQClientFactory(pMQClientFactory)
 {
+	m_TimeThread = new kpr::TimerThread("PullMessageService-timer",1000);
 }
 
 
@@ -39,7 +40,9 @@ PullMessageService::~PullMessageService()
 */
 void PullMessageService::executePullRequestLater(PullRequest* pPullRequest, long timeDelay)
 {
-
+	MyTimeHandler* handler = new MyTimeHandler(this,pPullRequest);
+	
+	m_TimeThread->RegisterTimer(0,timeDelay,handler,false);
 }
 
 
@@ -51,6 +54,7 @@ void PullMessageService::executePullRequestImmediately(PullRequest* pPullRequest
 	try
 	{
 		m_pullRequestQueue.push_back(pPullRequest);
+		wakeup();
 	}
 	catch (...)
 	{
@@ -65,7 +69,7 @@ void PullMessageService::Run()
 		{
 			if (m_pullRequestQueue.empty())
 			{
-				Sleep(5000);
+				waitForRunning(5000);
 				//Wait();
 			}
 
@@ -85,6 +89,9 @@ void PullMessageService::Run()
 
 		}
 	}
+
+	m_TimeThread->Close();
+	m_TimeThread->Join();
 }
 
 std::string PullMessageService::getServiceName()
@@ -106,4 +113,3 @@ void PullMessageService::pullMessage(PullRequest* pPullRequest)
 		//TODO
 	}
 }
-
