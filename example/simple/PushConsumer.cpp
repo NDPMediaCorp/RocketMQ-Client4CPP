@@ -42,6 +42,7 @@ public:
 	ConsumeConcurrentlyStatus consumeMessage(std::list<MessageExt*>& msgs,
 											ConsumeConcurrentlyContext& context)
 	{
+		std::cout<<"consumeMessage"<<std::endl;
 		MessageExt* msg = msgs.front();
 		long long offset = msg->getQueueOffset();
 		std::string maxOffset = msg->getProperty(Message::PROPERTY_MAX_OFFSET);
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
 	}
 
 	DefaultMQPushConsumer consumer("please_rename_unique_group_name");
-	//consumer.setNamesrvAddr(argv[1]);
+	consumer.setNamesrvAddr(argv[1]);
 
 	/**
 	* 订阅指定topic下所有消息
@@ -107,6 +108,17 @@ int main(int argc, char* argv[])
 	consumer.registerMessageListener(listener);
 	consumer.start();
 	
+	while(1)
+	{
+		if (getchar()=='e'&&getchar()=='x'&&getchar()=='i'&&getchar()=='t')
+		{
+			break;
+		}
+
+	}
+
+	consumer.shutdown();
+
 	delete listener;
 
 	return 0;

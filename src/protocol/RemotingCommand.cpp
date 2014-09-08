@@ -65,8 +65,11 @@ RemotingCommand::~RemotingCommand()
 
 void RemotingCommand::Encode()
 {
-	std::string extHeader;
-	m_pCustomHeader->Encode(extHeader);
+	std::string extHeader="{}";
+	if (m_pCustomHeader)
+	{
+		m_pCustomHeader->Encode(extHeader);
+	}
 
 	std::stringstream ss;
 	ss<<"{"<<CODE_STRING<<m_code<<","

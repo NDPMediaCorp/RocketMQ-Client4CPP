@@ -760,8 +760,9 @@ void MQClientFactory::sendHeartbeatToAllBroker()
 
 	for (; it!=m_brokerAddrTable.end(); it++)
 	{
-		std::map<int, std::string>::iterator it1 = it->second.begin();
-		for (; it1!=it->second.end(); it1++)
+		std::map<int, std::string> addrs = it->second;
+		std::map<int, std::string>::iterator it1 = addrs.begin();
+		for (; it1!=addrs.end(); it1++)
 		{
 			std::string& addr = it1->second;
 			if (!addr.empty())

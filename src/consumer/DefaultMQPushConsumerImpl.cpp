@@ -60,6 +60,13 @@ DefaultMQPushConsumerImpl::DefaultMQPushConsumerImpl(DefaultMQPushConsumer* pDef
 	flowControlTimes1 = 0;
 	flowControlTimes2 = 0;
 	m_pRebalanceImpl = new RebalancePushImpl(this);
+	m_pConsumerStatManager = new ConsumerStatManager();
+	m_pMQClientFactory = NULL;
+	m_pause = false;
+	m_consumeOrderly = false;
+	m_pPullAPIWrapper = NULL;
+	m_pMessageListenerInner = NULL;
+	m_pOffsetStore = NULL;
 }
 
 bool DefaultMQPushConsumerImpl::hasHook()
