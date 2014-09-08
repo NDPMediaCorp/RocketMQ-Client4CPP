@@ -20,6 +20,7 @@
 #include "InvokeCallback.h"
 
 class PullCallback;
+class MQClientAPIImpl;
 
 /**
 * 异步调用应答回调接口
@@ -28,12 +29,13 @@ class PullCallback;
 class ConsumerInvokeCallback : public InvokeCallback
 {
 public:
-	ConsumerInvokeCallback(PullCallback* pPullCallback);
+	ConsumerInvokeCallback(PullCallback* pPullCallback,MQClientAPIImpl* pMQClientAPIImpl);
 	virtual ~ConsumerInvokeCallback();
 	virtual void operationComplete(ResponseFuture* pResponseFuture);
 
 private:
 	PullCallback* m_pPullCallback;
+	MQClientAPIImpl* m_pMQClientAPIImpl;
 };
 
 #endif

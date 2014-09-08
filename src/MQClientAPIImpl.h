@@ -337,6 +337,8 @@ public:
 		const std::string& topic,
 		RemotingCommand* pResponse);
 
+	PullResult* processPullResponse(RemotingCommand* pResponse);
+
 private:
 	SendResult* sendMessageSync(const std::string& addr,
 								const std::string& brokerName,
@@ -355,8 +357,6 @@ private:
 							RemotingCommand* pRequest,
 							int timeoutMillis,
 							PullCallback* pPullCallback);
-
-	PullResult* processPullResponse(RemotingCommand* pResponse);
 
 	PullResult* pullMessageSync(const std::string& addr,
 								RemotingCommand* pRequest,

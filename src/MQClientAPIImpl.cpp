@@ -966,7 +966,7 @@ void MQClientAPIImpl::pullMessageAsync(const std::string& addr,
 										int timeoutMillis,
 										PullCallback* pPullCallback)
 {
-	ConsumerInvokeCallback* callback = new ConsumerInvokeCallback(pPullCallback);
+	ConsumerInvokeCallback* callback = new ConsumerInvokeCallback(pPullCallback,this);
 	m_pRemotingClient->invokeAsync(addr, *pRequest, timeoutMillis,callback);
 }
 
