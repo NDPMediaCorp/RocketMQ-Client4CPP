@@ -263,10 +263,14 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 						// 更新Broker地址信息
 						std::list<BrokerData> dataList = topicRouteData->getBrokerDatas();
 
-						std::list<BrokerData>::iterator it= dataList.begin();
-						for(; it!=dataList.end(); it++)
 						{
-							m_brokerAddrTable[(*it).brokerName]=(*it).brokerAddrs;
+							kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+							std::list<BrokerData>::iterator it= dataList.begin();
+
+							for(; it!=dataList.end(); it++)
+							{
+								m_brokerAddrTable[(*it).brokerName]=(*it).brokerAddrs;
+							}
 						}
 
 						// 更新发布队列信息
@@ -312,9 +316,10 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 			}
 			catch (...)
 			{
-				m_lockNamesrv.Unlock();
 				//TODO log?
 			}
+
+			m_lockNamesrv.Unlock();
 		}
 		else
 		{
@@ -323,7 +328,6 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 	}
 	catch (...)
 	{
-		m_lockNamesrv.Unlock();
 		//TODO log?
 	}
 
@@ -609,6 +613,7 @@ FindBrokerResult MQClientFactory::findBrokerAddressInAdmin(const std::string& br
 
 std::string MQClientFactory::findBrokerAddressInPublish(const std::string& brokerName)
 {
+	kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
 	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.find(brokerName);
 
 	if (it!=m_brokerAddrTable.end())
@@ -630,6 +635,7 @@ FindBrokerResult MQClientFactory::findBrokerAddressInSubscribe(const std::string
 	std::string brokerAddr="";
 	bool slave = false;
 	bool found = false;
+	kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
 	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.find(brokerName);
 
 	if (it!=m_brokerAddrTable.end())
@@ -756,11 +762,22 @@ void MQClientFactory::sendHeartbeatToAllBroker()
 		return;
 	}
 
-	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.begin();
-
-	for (; it!=m_brokerAddrTable.end(); it++)
+	std::vector<std::map<int, std::string> > addrlist;
 	{
-		std::map<int, std::string> addrs = it->second;
+		kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+		std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.begin();
+
+		for (; it!=m_brokerAddrTable.end(); it++)
+		{
+			addrlist.push_back(it->second);
+		}
+	}
+
+	std::vector<std::map<int, std::string> >::iterator it = addrlist.begin();
+
+	for (; it!=addrlist.end(); it++)
+	{
+		std::map<int, std::string> addrs = *it;
 		std::map<int, std::string>::iterator it1 = addrs.begin();
 		for (; it1!=addrs.end(); it1++)
 		{
@@ -943,10 +960,18 @@ void MQClientFactory::startScheduledTask()
 
 void MQClientFactory::cleanOfflineBroker()
 {
-	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.begin();
 	std::map<std::string, std::map<int, std::string> > updatedTable;
+	std::map<std::string, std::map<int, std::string> > tmpTable;
+	
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+		tmpTable = m_brokerAddrTable;
+	}
 
-	for (; it!=m_brokerAddrTable.end(); it++)
+	std::map<std::string, std::map<int, std::string> >::iterator it = tmpTable.begin();
+
+
+	for (; it!=tmpTable.end(); it++)
 	{
 		std::map<int, std::string> cloneTable = it->second;
 
@@ -972,8 +997,11 @@ void MQClientFactory::cleanOfflineBroker()
 		}
 	}
 
-	m_brokerAddrTable.clear();
-	m_brokerAddrTable = updatedTable;
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+		m_brokerAddrTable.clear();
+		m_brokerAddrTable = updatedTable;
+	}
 }
 
 bool MQClientFactory::isBrokerAddrExistInTopicRouteTable(const std::string& addr)
@@ -1129,13 +1157,24 @@ void MQClientFactory::unregisterClientWithLock(const std::string& producerGroup,
 
 void MQClientFactory::unregisterClient(const std::string& producerGroup, const std::string& consumerGroup)
 {
-	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.begin();
-
-	for (; it!=m_brokerAddrTable.end(); it++)
+	std::vector<std::map<int, std::string> > addrlist;
 	{
-		std::map<int, std::string>::iterator it1 = it->second.begin();
+		kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+		std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.begin();
 
-		for (; it1!=it->second.end();it1++)
+		for (; it!=m_brokerAddrTable.end(); it++)
+		{
+			addrlist.push_back(it->second);
+		}
+	}
+
+	std::vector<std::map<int, std::string> >::iterator it = addrlist.begin();
+
+	for (; it!=addrlist.end(); it++)
+	{
+		std::map<int, std::string>::iterator it1 = (*it).begin();
+
+		for (; it1!=(*it).end();it1++)
 		{
 			std::string& addr = it1->second;
 

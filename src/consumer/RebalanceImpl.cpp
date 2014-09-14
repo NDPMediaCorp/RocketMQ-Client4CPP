@@ -488,7 +488,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 	}
 
 	// 增加新增的队列
-	std::list<PullRequest> pullRequestList;
+	std::list<PullRequest*> pullRequestList;
 
 	std::set<MessageQueue>::iterator its = mqSet.begin();
 	for (; its != mqSet.end(); its++)
@@ -498,19 +498,19 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 
 		if (itm == m_processQueueTable.end())
 		{
-			PullRequest pullRequest;
-			pullRequest.setConsumerGroup(m_consumerGroup);
-			pullRequest.setMessageQueue(new MessageQueue(mq.getTopic(),mq.getBrokerName(),mq.getQueueId()));
-			pullRequest.setProcessQueue(new ProcessQueue());
+			PullRequest* pullRequest = new PullRequest();
+			pullRequest->setConsumerGroup(m_consumerGroup);
+			pullRequest->setMessageQueue(new MessageQueue(mq.getTopic(),mq.getBrokerName(),mq.getQueueId()));
+			pullRequest->setProcessQueue(new ProcessQueue());
 
 			// 这个需要根据策略来设置
 			long long nextOffset = computePullFromWhere(mq);
 			if (nextOffset >= 0)
 			{
-				pullRequest.setNextOffset(nextOffset);
+				pullRequest->setNextOffset(nextOffset);
 				pullRequestList.push_back(pullRequest);
 				changed = true;
-				m_processQueueTable[mq] = pullRequest.getProcessQueue();
+				m_processQueueTable[mq] = pullRequest->getProcessQueue();
 				//TODO log.info("doRebalance, {}, add a new mq, {}", consumerGroup, mq);
 			}
 			else

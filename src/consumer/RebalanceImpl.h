@@ -47,7 +47,7 @@ public:
 		std::set<MessageQueue>& mqAll, 
 		std::set<MessageQueue>& mqDivided)=0;
 	virtual void removeUnnecessaryMessageQueue(MessageQueue& mq, ProcessQueue& pq)=0;
-	virtual void dispatchPullRequest(std::list<PullRequest>& pullRequestList)=0;
+	virtual void dispatchPullRequest(std::list<PullRequest*>& pullRequestList)=0;
 	virtual long long computePullFromWhere(MessageQueue& mq)=0;
 
 	bool lock(MessageQueue& mq);

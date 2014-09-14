@@ -26,6 +26,7 @@
     <ClCompile Include="..\src\consumer\ConsumeMessageConcurrentlyService.cpp" />
     <ClCompile Include="..\src\consumer\ConsumeMessageOrderlyService.cpp" />
     <ClCompile Include="..\src\consumer\ConsumerInvokeCallback.cpp" />
+    <ClCompile Include="..\src\consumer\ConsumeType.cpp" />
     <ClCompile Include="..\src\consumer\DefaultMQPullConsumer.cpp" />
     <ClCompile Include="..\src\consumer\DefaultMQPullConsumerImpl.cpp" />
     <ClCompile Include="..\src\consumer\DefaultMQPushConsumer.cpp" />
@@ -65,6 +66,7 @@
     <ClCompile Include="..\src\producer\DefaultMQProducerImpl.cpp" />
     <ClCompile Include="..\src\producer\ProducerInvokeCallback.cpp" />
     <ClCompile Include="..\src\protocol\CommandCustomHeader.cpp" />
+    <ClCompile Include="..\src\protocol\HeartbeatData.cpp" />
     <ClCompile Include="..\src\protocol\LockBatchBody.cpp" />
     <ClCompile Include="..\src\protocol\RemotingCommand.cpp" />
     <ClCompile Include="..\src\transport\ResponseFuture.cpp" />

@@ -47,6 +47,7 @@ public:
 	int RecvData(std::list<std::string*>& outDataList);
 	void Run();
 	SOCKET GetSocket();
+	std::string& GetServerURL();
 
 private:
 	int SendOneMsg(const char* pBuffer, int len, int nTimeout);

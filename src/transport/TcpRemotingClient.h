@@ -98,6 +98,7 @@ public:
 
 private:
 	int SendCmd(TcpTransport* pTts,RemotingCommand& msg,int timeoutMillis);
+	void RemoveTTS(TcpTransport* pTts);
 	void ProcessData(std::string* pData);
 	void HandleSocketEvent(fd_set wset);
 	void HandleTimerEvent(unsigned long long tm);

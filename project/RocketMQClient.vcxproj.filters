@@ -167,6 +167,12 @@
     <ClCompile Include="..\src\protocol\LockBatchBody.cpp">
       <Filter>protocol</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\protocol\HeartbeatData.cpp">
+      <Filter>protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\consumer\ConsumeType.cpp">
+      <Filter>cosumer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\producer\LocalTransactionExecuter.h">

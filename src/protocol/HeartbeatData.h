@@ -50,39 +50,18 @@ typedef struct  ProducerData
 class HeartbeatData : public RemotingSerializable
 {
 public:
-	void Encode(std::string& outData)
-	{
-	}
+	HeartbeatData();
+	~HeartbeatData();
+	void Encode(std::string& outData);
 
-	std::string getClientID()
-	{
-		return m_clientID;
-	}
+	std::string getClientID();
+	void setClientID(const std::string& clientID);
 
-	void setClientID(const std::string& clientID)
-	{
-		m_clientID = clientID;
-	}
+	std::set<ProducerData>& getProducerDataSet();
+	void setProducerDataSet(const std::set<ProducerData>& producerDataSet);
 
-	std::set<ProducerData>& getProducerDataSet()
-	{
-		return m_producerDataSet;
-	}
-
-	void setProducerDataSet(const std::set<ProducerData>& producerDataSet)
-	{
-		m_producerDataSet = producerDataSet;
-	}
-
-	std::set<ConsumerData>& getConsumerDataSet()
-	{
-		return m_consumerDataSet;
-	}
-
-	void setConsumerDataSet(const std::set<ConsumerData>& consumerDataSet)
-	{
-		m_consumerDataSet = consumerDataSet;
-	}
+	std::set<ConsumerData>& getConsumerDataSet();
+	void setConsumerDataSet(const std::set<ConsumerData>& consumerDataSet);
 
 private:
 	std::string m_clientID;

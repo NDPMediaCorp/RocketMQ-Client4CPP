@@ -94,7 +94,8 @@ RemotingCommand* TcpRemotingClient::invokeSync(const std::string& addr,
 	}
 	else
 	{
-		//TODO close socket?
+		RemoveTTS(tts);
+
 		return NULL;
 	}
 }
@@ -111,7 +112,8 @@ int TcpRemotingClient::invokeAsync(const std::string& addr,
 	}
 	else
 	{
-		//TODO close socket?
+		RemoveTTS(tts);
+
 		return -1;
 	}
 }
@@ -127,7 +129,8 @@ int TcpRemotingClient::invokeOneway(const std::string& addr,
 	}
 	else
 	{
-		//TODO close socket?
+		RemoveTTS(tts);
+
 		return -1;
 	}
 }
@@ -235,6 +238,7 @@ TcpTransport* TcpRemotingClient::GetAndCreateTransport( const std::string& addr 
 		tts = new TcpTransport(config);
 		if (tts->Connect(addr)!=CLIENT_ERROR_SUCCESS)
 		{
+			delete tts;
 			return NULL;
 		}
 
@@ -399,4 +403,17 @@ int TcpRemotingClient::SendCmd( TcpTransport* pTts,RemotingCommand& msg,int time
 void TcpRemotingClient::registerProcessor( int requestCode, TcpRequestProcessor* pProcessor )
 {
 	m_processorTable[requestCode]=pProcessor;
+}
+
+void TcpRemotingClient::RemoveTTS( TcpTransport* pTts )
+{
+	if (pTts)
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+
+		std::map<std::string ,TcpTransport*>::iterator it = m_tcpTransportTable.find(pTts->GetServerURL());
+		m_tcpTransportTable.erase(it);
+
+		delete pTts;
+	}
 }

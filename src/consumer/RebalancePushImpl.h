@@ -32,7 +32,7 @@ public:
 		MQClientFactory* pMQClientFactory,
 		DefaultMQPushConsumerImpl* pDefaultMQPushConsumerImpl);
 
-	void dispatchPullRequest(std::list<PullRequest>& pullRequestList);
+	void dispatchPullRequest(std::list<PullRequest*>& pullRequestList);
 	long long computePullFromWhere(MessageQueue& mq);
 	void messageQueueChanged(const std::string& topic,
 		std::set<MessageQueue>& mqAll, 

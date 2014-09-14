@@ -42,13 +42,13 @@ RebalancePushImpl::RebalancePushImpl(const std::string& consumerGroup,
 {
 }
 
-void RebalancePushImpl::dispatchPullRequest(std::list<PullRequest>& pullRequestList)
+void RebalancePushImpl::dispatchPullRequest(std::list<PullRequest*>& pullRequestList)
 {
-	std::list<PullRequest>::iterator it = pullRequestList.begin();
+	std::list<PullRequest*>::iterator it = pullRequestList.begin();
 	// ÅÉ·¢PullRequest
 	for (;it!=pullRequestList.end();it++)
 	{
-		m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(&*it);
+		m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(*it);
 	}
 }
 

@@ -56,8 +56,7 @@ public:
 					if (!trimString.empty())
 					{
 						subscriptionData->getTagsSet().insert(trimString);
-						
-						// TODO subscriptionData.getCodeSet().add(trimString.hashCode());
+						subscriptionData->getCodeSet().insert(UtilAll::stringHashCode(trimString.c_str(),trimString.length()));
 					}
 				}
 			}

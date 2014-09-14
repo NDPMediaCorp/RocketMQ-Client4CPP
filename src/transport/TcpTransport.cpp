@@ -370,3 +370,8 @@ SOCKET TcpTransport::GetSocket()
 {
 	return m_sfd;
 }
+
+std::string& TcpTransport::GetServerURL()
+{
+	return m_serverURL;
+}
