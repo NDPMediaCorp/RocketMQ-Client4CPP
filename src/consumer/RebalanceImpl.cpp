@@ -21,6 +21,7 @@
 #include "LockBatchBody.h"
 #include "MQClientAPIImpl.h"
 #include "KPRUtil.h"
+#include "ScopedLock.h"
 
 RebalanceImpl::RebalanceImpl(const std::string& consumerGroup, 
 	MessageModel messageModel,
@@ -90,6 +91,8 @@ void RebalanceImpl::unlockAll(bool oneway)
 			{
 				m_pMQClientFactory->getMQClientAPIImpl()->unlockBatchMQ(findBrokerResult.brokerAddr,
 					requestBody, 1000, oneway);
+
+				kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 				std::set<MessageQueue>::iterator itm = mqs.begin();
 				for (;itm!=mqs.end();itm++)
 				{
@@ -129,6 +132,7 @@ bool RebalanceImpl::lock(MessageQueue& mq)
 			std::set<MessageQueue>::iterator it = lockedMq.begin();
 			for (; it != lockedMq.end(); it++)
 			{
+				kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 				MessageQueue mmqq = *it;
 				std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mmqq);
 				if (itt != m_processQueueTable.end())
@@ -193,6 +197,7 @@ void RebalanceImpl::lockAll()
 				std::set<MessageQueue>::iterator its = lockOKMQSet.begin();
 				for (;its != lockOKMQSet.end();its++)
 				{
+					kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 					MessageQueue mq = *its;
 					std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mq);
 					if (itt != m_processQueueTable.end())
@@ -216,6 +221,7 @@ void RebalanceImpl::lockAll()
 					std::set<MessageQueue>::iterator itf = lockOKMQSet.find(mq);
 					if (itf == lockOKMQSet.end())
 					{
+						kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 						std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mq);
 						if (itt != m_processQueueTable.end())
 						{
@@ -315,6 +321,7 @@ void RebalanceImpl::setmQClientFactory(MQClientFactory* pMQClientFactory)
 
 std::map<std::string, std::set<MessageQueue> > RebalanceImpl::buildProcessQueueTableByBrokerName()
 {
+	kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 	std::map<std::string, std::set<MessageQueue> > result ;
 	std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
 
@@ -453,39 +460,56 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 	bool changed = false;
 
 	// 将多余的队列删除
-	std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
-
-	for ( ; it != m_processQueueTable.end();)
+	std::map<MessageQueue, ProcessQueue*> tmp;
 	{
-		MessageQueue mq = it->first;
-		if (mq.getTopic() == topic)
+		kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+		std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
+
+		for ( ; it != m_processQueueTable.end();)
 		{
-			std::set<MessageQueue>::iterator its = mqSet.find(mq);
-			if (its == mqSet.end())
+			MessageQueue mq = it->first;
+			if (mq.getTopic() == topic)
 			{
-				changed = true;
-				ProcessQueue* pq = it->second;
-				if (pq != NULL)
+				std::set<MessageQueue>::iterator its = mqSet.find(mq);
+				if (its == mqSet.end())
 				{
-					pq->setDroped(true);
-					removeUnnecessaryMessageQueue(mq, *pq);
-					//TODO log.info("doRebalance, {}, remove unnecessary mq, {}",
-					//	consumerGroup, mq);
+					changed = true;
+					ProcessQueue* pq = it->second;
+					std::map<MessageQueue, ProcessQueue*>::iterator ittmp = it;
+					it++;
+					m_processQueueTable.erase(ittmp);
+
+					if (pq != NULL)
+					{
+						tmp[mq]=pq;
+					}
+
 				}
-				std::map<MessageQueue, ProcessQueue*>::iterator ittmp = it;
-				it++;
-				m_processQueueTable.erase(ittmp);
+				else
+				{
+					it++;
+				}
 			}
 			else
 			{
 				it++;
 			}
 		}
-		else
-		{
-			it++;
-		}
 	}
+
+	std::map<MessageQueue, ProcessQueue*>::iterator itTmp = tmp.begin();
+
+	for ( ; itTmp != tmp.end();itTmp++)
+	{
+		ProcessQueue* pq = itTmp->second;
+		MessageQueue mq = itTmp->first;
+		pq->setDroped(true);
+		removeUnnecessaryMessageQueue(mq, *pq);
+		//TODO log.info("doRebalance, {}, remove unnecessary mq, {}",
+		//	consumerGroup, mq);
+	}
+
+	tmp.clear();
 
 	// 增加新增的队列
 	std::list<PullRequest*> pullRequestList;
@@ -493,10 +517,19 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 	std::set<MessageQueue>::iterator its = mqSet.begin();
 	for (; its != mqSet.end(); its++)
 	{
+		
 		MessageQueue mq = *its;
-		std::map<MessageQueue, ProcessQueue*>::iterator itm = m_processQueueTable.find(mq);
+		bool find = false;
+		{
+			kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+			std::map<MessageQueue, ProcessQueue*>::iterator itm = m_processQueueTable.find(mq);
+			if (itm != m_processQueueTable.end())
+			{
+				find = true;
+			}
+		}
 
-		if (itm == m_processQueueTable.end())
+		if (!find)
 		{
 			PullRequest* pullRequest = new PullRequest();
 			pullRequest->setConsumerGroup(m_consumerGroup);
@@ -510,6 +543,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 				pullRequest->setNextOffset(nextOffset);
 				pullRequestList.push_back(pullRequest);
 				changed = true;
+				kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 				m_processQueueTable[mq] = pullRequest->getProcessQueue();
 				//TODO log.info("doRebalance, {}, add a new mq, {}", consumerGroup, mq);
 			}
@@ -529,9 +563,10 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 void RebalanceImpl::truncateMessageQueueNotMyTopic()
 {
 	std::map<std::string, SubscriptionData> subTable = getSubscriptionInner();
+	kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
 	std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
 
-	for ( ; it != m_processQueueTable.end(); it++)
+	for ( ; it != m_processQueueTable.end();)
 	{
 		MessageQueue mq = it->first;
 		std::map<std::string, SubscriptionData>::iterator itt = subTable.find(mq.getTopic());

@@ -372,7 +372,7 @@ void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
 	{
 		m_pPullAPIWrapper->pullKernelImpl(
 			*pPullRequest->getMessageQueue(), // 1
-			NULL, // 2
+			"", // 2
 			subscriptionData.getSubVersion(), // 3
 			pPullRequest->getNextOffset(), // 4
 			m_pDefaultMQPushConsumer->getPullBatchSize(), // 5
