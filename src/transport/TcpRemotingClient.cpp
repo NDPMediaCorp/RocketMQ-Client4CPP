@@ -139,7 +139,7 @@ void TcpRemotingClient::HandleSocketEvent(fd_set rset)
 {
 	std::list<std::string*> data;
 	{
-		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+		kpr::ScopedLock<kpr::Mutex> lock(m_tcpTransportTableMutex);
 		std::map<std::string ,TcpTransport*>::iterator it = m_tcpTransportTable.begin();
 
 		for (; it!=m_tcpTransportTable.end(); it++)
@@ -162,7 +162,7 @@ void TcpRemotingClient::HandleSocketEvent(fd_set rset)
 
 void TcpRemotingClient::UpdateEvent()
 {
-	kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+	kpr::ScopedLock<kpr::Mutex> lock(m_tcpTransportTableMutex);
 	std::map<std::string ,TcpTransport*>::iterator it = m_tcpTransportTable.begin();
 	m_maxFd=0;
 	FD_ZERO (&m_rset);
@@ -190,7 +190,7 @@ void TcpRemotingClient::Run()
 			FD_ZERO (&rset);
 			FD_ZERO (&xset);
 			{
-				kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+				kpr::ScopedLock<kpr::Mutex> lock(m_tcpTransportTableMutex);
 
 				rset = m_rset;
 				xset = m_rset;
@@ -227,7 +227,7 @@ TcpTransport* TcpRemotingClient::GetAndCreateTransport( const std::string& addr 
 	TcpTransport* tts;
 
 	{
-		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+		kpr::ScopedLock<kpr::Mutex> lock(m_tcpTransportTableMutex);
 		std::map<std::string ,TcpTransport*>::iterator it = m_tcpTransportTable.find(addr);
 		if (it!=m_tcpTransportTable.end())
 		{
@@ -265,6 +265,7 @@ void TcpRemotingClient::ProcessData( std::string* pData )
 	int code;
 	if (cmd->isResponseType())
 	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
 		std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(cmd->getOpaque());
 		if (it!=m_responseTable.end())
 		{
@@ -291,7 +292,12 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		int timeoutMillis )
 {
 	ResponseFuture* responseFuture = new ResponseFuture(request.getCode(),request.getOpaque(), timeoutMillis, NULL, true);
-	m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+	
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+		m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+	}
+
 	int ret = SendCmd(pTts,request,timeoutMillis);
 	if (ret==0)
 	{
@@ -301,7 +307,11 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 	{
 		//TODO close socket?
 		responseFuture->setSendRequestOK(false);
-		m_responseTable.erase(m_responseTable.find(request.getOpaque()));
+		{
+			kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+			m_responseTable.erase(m_responseTable.find(request.getOpaque()));
+		}
+
 		delete responseFuture;
 		return NULL;
 	}
@@ -319,6 +329,8 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		}
 	}
 
+	delete responseFuture;
+
 	return responseCommand;
 }
 
@@ -328,7 +340,12 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 										InvokeCallback* pInvokeCallback )
 {
 	ResponseFuture* responseFuture = new ResponseFuture(request.getCode(),request.getOpaque(), timeoutMillis, pInvokeCallback, true);
-	m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+	
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+		m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+	}
+
 	int ret = SendCmd(pTts,request,timeoutMillis);
 	if (ret==0)
 	{
@@ -337,8 +354,6 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 	else
 	{
 		responseFuture->setSendRequestOK(false);
-		m_responseTable.erase(m_responseTable.find(request.getOpaque()));
-		delete responseFuture;
 	}
 
 	return ret;
@@ -376,10 +391,19 @@ void TcpRemotingClient::processRequestCommand(RemotingCommand* pCmd)
 
 void TcpRemotingClient::processResponseCommand(RemotingCommand* pCmd)
 {
-	std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(pCmd->getOpaque());
-	if (it!=m_responseTable.end())
+	ResponseFuture* res = NULL;
 	{
-		ResponseFuture* res = it->second;
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+		std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(pCmd->getOpaque());
+		if (it!=m_responseTable.end())
+		{
+			res = it->second;
+			m_responseTable.erase(it);
+		}
+	}
+
+	if (res)
+	{
 		res->putResponse(pCmd);
 		res->executeInvokeCallback();
 	}
@@ -409,7 +433,7 @@ void TcpRemotingClient::RemoveTTS( TcpTransport* pTts )
 {
 	if (pTts)
 	{
-		kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
+		kpr::ScopedLock<kpr::Mutex> lock(m_tcpTransportTableMutex);
 
 		std::map<std::string ,TcpTransport*>::iterator it = m_tcpTransportTable.find(pTts->GetServerURL());
 		m_tcpTransportTable.erase(it);

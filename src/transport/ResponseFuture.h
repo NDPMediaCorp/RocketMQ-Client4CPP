@@ -35,7 +35,7 @@ class ResponseFuture
 {
 public:
 	ResponseFuture(int requestCode,int opaque, int timeoutMillis, InvokeCallback* pInvokeCallback,bool block);
-
+	~ResponseFuture();
 	void executeInvokeCallback();
 	void release();
 	bool isTimeout();

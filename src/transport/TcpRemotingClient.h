@@ -126,7 +126,8 @@ private:
 	bool m_stop;
 	fd_set m_rset;
 	SOCKET m_maxFd;
-	kpr::Mutex m_mutex;
+	kpr::Mutex m_tcpTransportTableMutex;
+	kpr::Mutex m_responseTableMutex;
 
 	std::map<int,ResponseFuture*> m_responseTable;
 	std::map<std::string ,TcpTransport*> m_tcpTransportTable;

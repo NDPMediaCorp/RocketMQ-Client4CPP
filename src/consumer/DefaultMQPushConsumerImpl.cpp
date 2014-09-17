@@ -735,7 +735,7 @@ void DefaultMQPushConsumerImpl::copySubscription()
 
 void DefaultMQPushConsumerImpl::updateTopicSubscribeInfoWhenSubscriptionChanged()
 {
-	std::map<std::string, SubscriptionData>& subTable = getSubscriptionInner();
+	std::map<std::string, SubscriptionData> subTable = getSubscriptionInner();
 
 	std::map<std::string, SubscriptionData>::iterator it = subTable.begin();
 	for (;it!=subTable.end();it++)
