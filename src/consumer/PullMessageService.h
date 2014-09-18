@@ -74,6 +74,7 @@ private:
 
 private:
 	std::list<PullRequest*> m_pullRequestQueue;
+	kpr::Mutex m_lock;
 	MQClientFactory* m_pMQClientFactory;
 	kpr::TimerThread_var m_TimeThread;
 };

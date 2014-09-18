@@ -372,7 +372,7 @@ void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
 	{
 		m_pPullAPIWrapper->pullKernelImpl(
 			*pPullRequest->getMessageQueue(), // 1
-			NULL, // 2
+			"", // 2
 			subscriptionData.getSubVersion(), // 3
 			pPullRequest->getNextOffset(), // 4
 			m_pDefaultMQPushConsumer->getPullBatchSize(), // 5
@@ -735,7 +735,7 @@ void DefaultMQPushConsumerImpl::copySubscription()
 
 void DefaultMQPushConsumerImpl::updateTopicSubscribeInfoWhenSubscriptionChanged()
 {
-	std::map<std::string, SubscriptionData>& subTable = getSubscriptionInner();
+	std::map<std::string, SubscriptionData> subTable = getSubscriptionInner();
 
 	std::map<std::string, SubscriptionData>::iterator it = subTable.begin();
 	for (;it!=subTable.end();it++)

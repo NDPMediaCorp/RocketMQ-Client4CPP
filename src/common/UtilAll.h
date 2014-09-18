@@ -43,14 +43,14 @@ public:
 		{
 			std::string::size_type right = in.find(delimiter,left);
 
-			if (right = std::string::npos)
+			if (right == std::string::npos)
 			{
 				break;
 			}
 
 			out.push_back(in.substr(left,right-left));
 
-			left = right+1;
+			left = right+delimiter.length();
 		}
 
 		out.push_back(in.substr(left));
@@ -65,7 +65,7 @@ public:
 		{
 			std::string::size_type right = in.find(delimiter,left);
 
-			if (right = std::string::npos)
+			if (right == std::string::npos)
 			{
 				break;
 			}
@@ -101,7 +101,7 @@ public:
 			return str.substr(left);
 		}
 
-		return str.substr(left,right-left);
+		return str.substr(left,right + 1 -left);
 	}
 
 	static bool isBlank( const std::string& str )
@@ -129,6 +129,20 @@ public:
 	static int hashCode(void* pData, int len)
 	{
 		return 0;
+	}
+
+	static int stringHashCode(const char* pData, int len)
+	{
+		int hash = 0;
+		if (pData !=NULL && len > 0)
+		{
+			for (int i = 0; i < len; i++)
+			{
+				hash = 31*hash + pData[i];
+			}
+		}
+
+		return hash;
 	}
 
 	static bool compress(const char* pIn, int inLen, unsigned char** pOut, int* pOutLen, int level)

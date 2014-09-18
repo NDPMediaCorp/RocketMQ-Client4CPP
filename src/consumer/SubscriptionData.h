@@ -42,8 +42,11 @@ public:
 
 	int hashCode();
 
+	void encode(std::string& outData);
+
 	bool operator==(const SubscriptionData& other);
 	bool operator<(const SubscriptionData& other)const;
+
 
 public:
 	static std::string SUB_ALL;

@@ -43,7 +43,7 @@ long long RebalancePullImpl::computePullFromWhere(MessageQueue& mq)
 	return 0;
 }
 
-void RebalancePullImpl::dispatchPullRequest(std::list<PullRequest>& pullRequestList)
+void RebalancePullImpl::dispatchPullRequest(std::list<PullRequest*>& pullRequestList)
 {
 }
 

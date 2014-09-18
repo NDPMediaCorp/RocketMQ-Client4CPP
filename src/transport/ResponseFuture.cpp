@@ -37,6 +37,14 @@ ResponseFuture::ResponseFuture(int requestCode,int opaque, int timeoutMillis, In
 	}
 }
 
+ResponseFuture::~ResponseFuture()
+{
+	if(m_pMonitor)
+	{
+		delete m_pMonitor;
+	}
+}
+
 void  ResponseFuture::executeInvokeCallback()
 {
 	if (m_pInvokeCallback != NULL)
@@ -44,6 +52,11 @@ void  ResponseFuture::executeInvokeCallback()
 		if (m_exec++==0)
 		{
 			m_pInvokeCallback->operationComplete(this);
+			m_exec--;
+			if (m_exec==0)
+			{
+				delete this;
+			}
 		}
 	}
 }
