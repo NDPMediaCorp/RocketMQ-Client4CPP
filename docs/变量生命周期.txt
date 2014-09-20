@@ -1,0 +1,20 @@
+1 ResponseFuture 
+	invokeSyncImpl 创建 --删除
+	invokeAsyncImpl 创建并加入表->ProcessDataWork(线程池工作线程)->ProcessData-》processResponseComman从表中删除
+		->执行本身的回调函数-》delete this；
+2 RemotingCommand
+	主动请求类型：
+		各调用函数创建 并销毁
+	接收应答类型：ProcessData处理数据时创建
+		同步方式：
+			调用RemotingClient：：invokeSync函数后即可删除
+
+		异步方式：->ResponseFuture::executeInvokeCallback-> InvokeCallback::operationComplete(this)
+			->MQClientAPIImpl->processPullResponse()->delete;
+
+
+3 ConsumerInvokeCallback
+	MQClientAPIImpl::pullMessageAsync创建->RemotingClient::invokeAsync->ResponseFuture->operationComplete->delete
+
+4  roducerInvokeCallback
+	MQClientAPIImpl::sendMessageAsync创建->RemotingClient::invokeAsync->ResponseFuture->operationComplete->delete
