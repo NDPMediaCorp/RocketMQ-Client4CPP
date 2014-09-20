@@ -61,6 +61,8 @@ RemotingCommand::~RemotingCommand()
 		m_bodyLen=0;
 		m_pBody = NULL;
 	}
+
+	delete m_pCustomHeader;
 }
 
 void RemotingCommand::Encode()

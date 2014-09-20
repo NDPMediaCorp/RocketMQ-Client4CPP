@@ -36,6 +36,7 @@ void ConsumerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 {
 	if (m_pPullCallback==NULL)
 	{
+		delete this;
 		return;
 	}
 
@@ -46,14 +47,18 @@ void ConsumerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 		{
 			PullResult* pullResult = m_pMQClientAPIImpl->processPullResponse(response);
 			response->SetBody(NULL,0,false);
-			delete response;
 
 			m_pPullCallback->onSuccess(*pullResult);
+			
+			//TODO 需要先处理好PullResult的Message，才能删除PullResult
+			//delete pullResult;
 		}
 		catch (MQException& e)
 		{
 			m_pPullCallback->onException(e);
 		}
+
+		delete response;
 	}
 	else
 	{
@@ -79,4 +84,6 @@ void ConsumerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 			m_pPullCallback->onException(e);
 		}
 	}
+
+	delete this;
 }

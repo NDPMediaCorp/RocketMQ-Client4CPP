@@ -344,13 +344,13 @@ private:
 								const std::string& brokerName,
 								Message& msg,
 								int timeoutMillis,
-								RemotingCommand& request);
+								RemotingCommand* request);
 
 	void sendMessageAsync(const std::string& addr,
 							const std::string& brokerName,
 							Message& msg,
 							int timeoutMillis,
-							RemotingCommand& request,
+							RemotingCommand* request,
 							SendCallback* pSendCallback);
 
 	void pullMessageAsync(const std::string& addr,

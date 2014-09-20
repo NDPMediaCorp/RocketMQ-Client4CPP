@@ -84,7 +84,7 @@ std::list<std::string> TcpRemotingClient::getNameServerAddressList()
 }
 
 RemotingCommand* TcpRemotingClient::invokeSync(const std::string& addr,
-		RemotingCommand& request,
+		RemotingCommand* request,
 		int timeoutMillis)
 {
 	TcpTransport* tts = GetAndCreateTransport(addr);
@@ -101,7 +101,7 @@ RemotingCommand* TcpRemotingClient::invokeSync(const std::string& addr,
 }
 
 int TcpRemotingClient::invokeAsync(const std::string& addr,
-								   RemotingCommand& request,
+								   RemotingCommand* request,
 								   int timeoutMillis,
 								   InvokeCallback* pInvokeCallback)
 {
@@ -119,7 +119,7 @@ int TcpRemotingClient::invokeAsync(const std::string& addr,
 }
 
 int TcpRemotingClient::invokeOneway(const std::string& addr,
-									RemotingCommand& request,
+									RemotingCommand* request,
 									int timeoutMillis)
 {
 	TcpTransport* tts = GetAndCreateTransport(addr);
@@ -288,14 +288,18 @@ void TcpRemotingClient::ProcessData( std::string* pData )
 }
 
 RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
-		RemotingCommand& request,
+		RemotingCommand* request,
 		int timeoutMillis )
 {
-	ResponseFuture* responseFuture = new ResponseFuture(request.getCode(),request.getOpaque(), timeoutMillis, NULL, true);
+	ResponseFuture* responseFuture = new ResponseFuture(request->getCode(),
+														request->getOpaque(), 
+														timeoutMillis,
+														NULL,
+														true);
 	
 	{
 		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
-		m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+		m_responseTable.insert(std::pair<int,ResponseFuture*>(request->getOpaque(), responseFuture));
 	}
 
 	int ret = SendCmd(pTts,request,timeoutMillis);
@@ -309,7 +313,7 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		responseFuture->setSendRequestOK(false);
 		{
 			kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
-			m_responseTable.erase(m_responseTable.find(request.getOpaque()));
+			m_responseTable.erase(m_responseTable.find(request->getOpaque()));
 		}
 
 		delete responseFuture;
@@ -335,15 +339,19 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 }
 
 int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
-										RemotingCommand& request,
+										RemotingCommand* request,
 										int timeoutMillis,
 										InvokeCallback* pInvokeCallback )
 {
-	ResponseFuture* responseFuture = new ResponseFuture(request.getCode(),request.getOpaque(), timeoutMillis, pInvokeCallback, true);
+	ResponseFuture* responseFuture = new ResponseFuture(request->getCode(),
+														request->getOpaque(),
+														timeoutMillis,
+														pInvokeCallback,
+														true);
 	
 	{
 		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
-		m_responseTable.insert(std::pair<int,ResponseFuture*>(request.getOpaque(), responseFuture));
+		m_responseTable.insert(std::pair<int,ResponseFuture*>(request->getOpaque(), responseFuture));
 	}
 
 	int ret = SendCmd(pTts,request,timeoutMillis);
@@ -360,10 +368,10 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 }
 
 int TcpRemotingClient::invokeOnewayImpl( TcpTransport* pTts,
-		RemotingCommand& request,
+		RemotingCommand* request,
 		int timeoutMillis )
 {
-	request.markOnewayRPC();
+	request->markOnewayRPC();
 	SendCmd(pTts,request,timeoutMillis);
 
 	return 0;
@@ -402,6 +410,7 @@ void TcpRemotingClient::processResponseCommand(RemotingCommand* pCmd)
 		}
 	}
 
+	// 同步调用需要通知等待者，异步调用需要调用回调函数
 	if (res)
 	{
 		res->putResponse(pCmd);
@@ -413,12 +422,12 @@ void TcpRemotingClient::processResponseCommand(RemotingCommand* pCmd)
 	}
 }
 
-int TcpRemotingClient::SendCmd( TcpTransport* pTts,RemotingCommand& msg,int timeoutMillis )
+int TcpRemotingClient::SendCmd( TcpTransport* pTts,RemotingCommand* msg,int timeoutMillis )
 {
-	int ret = pTts->SendData(msg.GetHead(),msg.GetHeadLen(),timeoutMillis);
-	if (ret==0&&msg.GetBody())
+	int ret = pTts->SendData(msg->GetHead(),msg->GetHeadLen(),timeoutMillis);
+	if (ret==0&&msg->GetBody())
 	{
-		ret = pTts->SendData(msg.GetBody(),msg.GetBodyLen(),timeoutMillis);
+		ret = pTts->SendData(msg->GetBody(),msg->GetBodyLen(),timeoutMillis);
 	}
 
 	return ret;

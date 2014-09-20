@@ -74,7 +74,7 @@ void LockBatchResponseBody::Encode(std::string& outData)
 
 LockBatchResponseBody* LockBatchResponseBody::Decode(char* pData,int len)
 {
-	return NULL;
+	return new LockBatchResponseBody();
 }
 
 std::set<MessageQueue> LockBatchResponseBody::getLockOKMQSet()

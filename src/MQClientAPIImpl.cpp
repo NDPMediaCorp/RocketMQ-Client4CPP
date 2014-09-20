@@ -157,7 +157,7 @@ void MQClientAPIImpl::createTopic(const std::string& addr,
 		RemotingCommand::createRequestCommand(UPDATE_AND_CREATE_TOPIC_VALUE,requestHeader);
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 	
 	if (response)
 	{
@@ -165,13 +165,21 @@ void MQClientAPIImpl::createTopic(const std::string& addr,
 		{
 		case SUCCESS_VALUE:
 			{
+				delete response;
+				delete request;
 				return;
 			}
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark,repCode);
 	}
 
 	THROW_MQEXCEPTION(MQClientException, "createTopic failed",-1);
@@ -204,26 +212,28 @@ SendResult MQClientAPIImpl::sendMessage(const std::string& addr,
 	switch (communicationMode)
 	{
 	case ONEWAY:
-		m_pRemotingClient->invokeOneway(addr, *request, timeoutMillis);
+		m_pRemotingClient->invokeOneway(addr, request, timeoutMillis);
+		delete request;
 		return result;
 	case ASYNC:
-		sendMessageAsync(addr, brokerName, msg, timeoutMillis, *request, pSendCallback);
+		sendMessageAsync(addr, brokerName, msg, timeoutMillis, request, pSendCallback);
+		delete request;
 		return result;
 	case SYNC:
 		{
-			SendResult* r = sendMessageSync(addr, brokerName, msg, timeoutMillis, *request);
+			SendResult* r = sendMessageSync(addr, brokerName, msg, timeoutMillis, request);
 
 			if (r)
 			{
 				result =*r;
 			}
-
+			delete request;
 			return result;
 		}
 	default:
 		break;
 	}
-
+	delete request;
 	return result;
 }
 
@@ -244,22 +254,24 @@ PullResult* MQClientAPIImpl::pullMessage(const std::string& addr,
 
 	RemotingCommand* request = RemotingCommand::createRequestCommand(PULL_MESSAGE_VALUE, pRequestHeader);
 	request->Encode();
-
+	PullResult* result = NULL;
 	switch (communicationMode)
 	{
 	case ONEWAY:
-		return NULL;
+		break;
 	case ASYNC:
 		pullMessageAsync(addr, request, timeoutMillis, pPullCallback);
-		return NULL;
+		break;
 	case SYNC:
-		return pullMessageSync(addr, request, timeoutMillis);
+		result =  pullMessageSync(addr, request, timeoutMillis);
+		break;
 	default:
 		assert(false);
 		break;
 	}
 
-	return NULL;
+	delete request;
+	return result;
 }
 
 MessageExt MQClientAPIImpl::viewMessage( const std::string& addr,  long long phyoffset,  int timeoutMillis)
@@ -310,7 +322,7 @@ std::list<std::string> MQClientAPIImpl::getConsumerIdListByGroup(const std::stri
 
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 
 	if (response)
 	{
@@ -322,14 +334,25 @@ std::list<std::string> MQClientAPIImpl::getConsumerIdListByGroup(const std::stri
 				{
 					GetConsumerListByGroupResponseBody* body =
 						GetConsumerListByGroupResponseBody::Decode((char*)response->GetBody(),response->GetBodyLen());
-					return body->getConsumerIdList();
+					
+					std::list<std::string> ret = body->getConsumerIdList();
+					delete response;
+					delete request;
+					delete body;
+					return ret;
 				}
 			}
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	THROW_MQEXCEPTION(MQClientException, "getConsumerIdListByGroup failed",-1);
@@ -415,23 +438,30 @@ void MQClientAPIImpl::sendHearbeat(const std::string& addr, HeartbeatData* pHear
 	std::string body;
 	pHeartbeatData->Encode(body);
 	request->SetBody((char*)body.data(),body.length(),true);
-
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 	if (response)
 	{
 		switch (response->getCode())
 		{
 		case SUCCESS_VALUE:
 			{
+				delete response;
+				delete request;
 				return;
 			}
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	THROW_MQEXCEPTION(MQClientException, "sendHearbeat failed",-1);
@@ -494,19 +524,33 @@ void MQClientAPIImpl::consumerSendMessageBack(MessageExt& msg,
 
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 	if (response)
 	{
-
+		bool ret =false;
 		switch (response->getCode())
 		{
 		case SUCCESS_VALUE:
-			return;
+			ret = true;
+			break;
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		delete request;
+
+		if (ret)
+		{
+			delete response;
+			return;
+		}
+
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	THROW_MQEXCEPTION(MQClientException, "consumerSendMessageBack failed",-1);
@@ -539,7 +583,7 @@ std::set<MessageQueue> MQClientAPIImpl::lockBatchMQ(const std::string& addr,
 	request->SetBody((char*)body.data(),body.length(),true);
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 	if (response)
 	{
 		switch (response->getCode())
@@ -562,13 +606,22 @@ std::set<MessageQueue> MQClientAPIImpl::lockBatchMQ(const std::string& addr,
 							m_projectGroupPrefix));
 					}
 				}
+
+				delete response;
+				delete request;
 				return messageQueues;
 			}
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	THROW_MQEXCEPTION(MQClientException, "lockBatchMQ failed",-1);
@@ -604,22 +657,30 @@ void MQClientAPIImpl::unlockBatchMQ(const std::string& addr,
 
 	if (oneway)
 	{
-		m_pRemotingClient->invokeOneway(addr, *request, timeoutMillis);
+		m_pRemotingClient->invokeOneway(addr, request, timeoutMillis);
 	}
 	else
 	{
-		RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *request, timeoutMillis);
+		RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 		if (response)
 		{
 			switch (response->getCode())
 			{
 			case SUCCESS_VALUE:
+				delete response;
+				delete request;
 				return;
 			default:
 				break;
 			}
 
-			THROW_MQEXCEPTION(MQClientException, response->getRemark(),response->getCode());
+			std::string remark = response->getRemark();
+			int repCode = response->getCode();
+
+			delete response;
+			delete request;
+
+			THROW_MQEXCEPTION(MQClientException, remark, repCode);
 		}
 
 		THROW_MQEXCEPTION(MQClientException, "unlockBatchMQ failed",-1);
@@ -689,7 +750,7 @@ TopicRouteData* MQClientAPIImpl::getDefaultTopicRouteInfoFromNameServer(const st
 	RemotingCommand* request = RemotingCommand::createRequestCommand(GET_ROUTEINTO_BY_TOPIC_VALUE,requestHeader);
 	request->Encode();
 	
-	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, request, timeoutMillis);
 
 	if (response)
 	{
@@ -706,14 +767,23 @@ TopicRouteData* MQClientAPIImpl::getDefaultTopicRouteInfoFromNameServer(const st
 				const char* body = response->GetBody();
 				if (body)
 				{
-					return TopicRouteData::Decode(body,bodyLen);
+					TopicRouteData* ret = TopicRouteData::Decode(body,bodyLen);
+					delete response;
+					delete request;
+					return ret;
 				}
 			}
 		default:
 			break;
 		}
 		
-		THROW_MQEXCEPTION(MQClientException,response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	return NULL;
@@ -734,7 +804,7 @@ TopicRouteData* MQClientAPIImpl::getTopicRouteInfoFromNameServer(const std::stri
 	RemotingCommand* request = RemotingCommand::createRequestCommand(GET_ROUTEINTO_BY_TOPIC_VALUE,requestHeader);
 	request->Encode();
 
-	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, request, timeoutMillis);
 
 	if (response)
 	{
@@ -750,14 +820,24 @@ TopicRouteData* MQClientAPIImpl::getTopicRouteInfoFromNameServer(const std::stri
 				const char* body = response->GetBody();
 				if (body)
 				{
-					return TopicRouteData::Decode(body,bodyLen);
+					TopicRouteData* ret = TopicRouteData::Decode(body,bodyLen);
+					delete response;
+					delete request;
+
+					return ret;
 				}
 			}
 		default:
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException,response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	return NULL;
@@ -767,7 +847,7 @@ TopicList* MQClientAPIImpl::getTopicListFromNameServer( int timeoutMillis)
 {
 	RemotingCommand* request = RemotingCommand::createRequestCommand(GET_ALL_TOPIC_LIST_FROM_NAMESERVER_VALUE,NULL);
 	request->Encode();
-	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, *request, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(m_nameSrvAddr, request, timeoutMillis);
 	if (response)
 	{
 		switch (response->getCode())
@@ -794,6 +874,8 @@ TopicList* MQClientAPIImpl::getTopicListFromNameServer( int timeoutMillis)
 						topicList->setTopicList(newTopicSet);
 					}
 
+					delete response;
+					delete request;
 					return topicList;
 				}
 			}
@@ -801,7 +883,13 @@ TopicList* MQClientAPIImpl::getTopicListFromNameServer( int timeoutMillis)
 			break;
 		}
 
-		THROW_MQEXCEPTION(MQClientException,response->getRemark(),response->getCode());
+		std::string remark = response->getRemark();
+		int repCode = response->getCode();
+
+		delete response;
+		delete request;
+
+		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
 	return NULL;
@@ -890,7 +978,7 @@ SendResult* MQClientAPIImpl::sendMessageSync(const std::string& addr,
 											 const std::string& brokerName,
 											 Message& msg,
 											 int timeoutMillis,
-											 RemotingCommand& request)
+											 RemotingCommand* request)
 {
 	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 	return processSendResponse(brokerName, msg.getTopic(), response);
@@ -900,7 +988,7 @@ void MQClientAPIImpl::sendMessageAsync(const std::string& addr,
 										const std::string& brokerName,
 										Message& msg,
 										int timeoutMillis,
-										RemotingCommand& request,
+										RemotingCommand* request,
 										SendCallback* pSendCallback)
 {
 	ProducerInvokeCallback* callback = new ProducerInvokeCallback(pSendCallback,this,msg.getTopic(),brokerName);
@@ -950,14 +1038,23 @@ SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
 
 			MessageQueue messageQueue (topic, brokerName, responseHeader->queueId);
 
-			return new SendResult(sendStatus, responseHeader->msgId, messageQueue,
+			SendResult* ret = new SendResult(sendStatus, responseHeader->msgId, messageQueue,
 				responseHeader->queueOffset, m_projectGroupPrefix);
+
+			delete pResponse;
+
+			return ret;
 		}
 	default:
 		break;
 	}
 
-	THROW_MQEXCEPTION(MQBrokerException,pResponse->getRemark(),pResponse->getCode());
+	std::string remark = pResponse->getRemark();
+	int repCode = pResponse->getCode();
+
+	delete pResponse;
+
+	THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	return NULL;
 }
 
@@ -967,7 +1064,7 @@ void MQClientAPIImpl::pullMessageAsync(const std::string& addr,
 										PullCallback* pPullCallback)
 {
 	ConsumerInvokeCallback* callback = new ConsumerInvokeCallback(pPullCallback,this);
-	m_pRemotingClient->invokeAsync(addr, *pRequest, timeoutMillis,callback);
+	m_pRemotingClient->invokeAsync(addr, pRequest, timeoutMillis,callback);
 }
 
 PullResult* MQClientAPIImpl::processPullResponse( RemotingCommand* pResponse)
@@ -1004,7 +1101,7 @@ PullResult* MQClientAPIImpl::pullMessageSync(const std::string& addr,
 											 RemotingCommand* pRequest,
 											 int timeoutMillis)
 {
-	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, *pRequest, timeoutMillis);
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, pRequest, timeoutMillis);
 
 	PullResult* result = processPullResponse(response);
 

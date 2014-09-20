@@ -62,16 +62,16 @@ public:
 	std::list<std::string> getNameServerAddressList();
 
 	RemotingCommand* invokeSync(const std::string& addr,
-								RemotingCommand& request,
+								RemotingCommand* request,
 								int timeoutMillis) ;
 
 	int invokeAsync(const std::string& addr,
-					RemotingCommand& request,
+					RemotingCommand* request,
 					int timeoutMillis,
 					InvokeCallback* invokeCallback);
 
 	int invokeOneway(const std::string& addr,
-					 RemotingCommand& request,
+					 RemotingCommand* request,
 					 int timeoutMillis);
 
 	void registerProcessor(int requestCode, TcpRequestProcessor* pProcessor);
@@ -97,7 +97,7 @@ public:
 	friend class ProcessDataWork;
 
 private:
-	int SendCmd(TcpTransport* pTts,RemotingCommand& msg,int timeoutMillis);
+	int SendCmd(TcpTransport* pTts,RemotingCommand* msg,int timeoutMillis);
 	void RemoveTTS(TcpTransport* pTts);
 	void ProcessData(std::string* pData);
 	void HandleSocketEvent(fd_set wset);
@@ -110,16 +110,16 @@ private:
 	TcpTransport* GetAndCreateTransport(const std::string& addr);
 
 	RemotingCommand* invokeSyncImpl(TcpTransport* pTts,
-									RemotingCommand& request,
+									RemotingCommand* request,
 									int timeoutMillis) ;
 
 	int invokeAsyncImpl(TcpTransport* pTts,
-						RemotingCommand& request,
+						RemotingCommand* request,
 						int timeoutMillis,
 						InvokeCallback* pInvokeCallback);
 
 	int invokeOnewayImpl(TcpTransport* pTts,
-						 RemotingCommand& request,
+						 RemotingCommand* request,
 						 int timeoutMillis);
 
 private:

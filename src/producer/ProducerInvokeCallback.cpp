@@ -20,6 +20,7 @@
 #include "MQClientAPIImpl.h"
 #include "SendCallback.h"
 #include "MQClientException.h"
+#include "RemotingCommand.h"
 
 ProducerInvokeCallback::ProducerInvokeCallback(SendCallback* pSendCallBack,
 	MQClientAPIImpl*pMQClientAPIImpl,
@@ -40,6 +41,7 @@ void ProducerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 {
 	if (m_pSendCallBack==NULL)
 	{
+		delete this;
 		return;
 	}
 
@@ -52,11 +54,15 @@ void ProducerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 				m_pMQClientAPIImpl->processSendResponse(m_brokerName, m_topic, response);
 
 			m_pSendCallBack->onSuccess(*sendResult);
+
+			delete sendResult;
 		}
 		catch (MQException& e)
 		{
 			m_pSendCallBack->onException(e);
 		}
+
+		delete response;
 	}
 	else
 	{
@@ -82,4 +88,6 @@ void ProducerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 			m_pSendCallBack->onException(e);
 		}
 	}
+
+	delete this;
 }

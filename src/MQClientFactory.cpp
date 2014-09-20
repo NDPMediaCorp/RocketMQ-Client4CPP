@@ -202,9 +202,10 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 	{
 		if (m_lockNamesrv.TryLock())
 		{
+			TopicRouteData* topicRouteData = NULL;
 			try
 			{
-				TopicRouteData* topicRouteData;
+				
 				if (isDefault && pDefaultMQProducer != NULL)
 				{
 					topicRouteData =
@@ -306,6 +307,8 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 
 						m_topicRouteTable[topic]= cloneTopicRouteData;
 						m_lockNamesrv.Unlock();
+
+						delete topicRouteData;
 						return true;
 					}
 				}
@@ -317,6 +320,10 @@ bool MQClientFactory::updateTopicRouteInfoFromNameServer(const std::string& topi
 			catch (...)
 			{
 				//TODO log?
+				if (topicRouteData != NULL)
+				{
+					delete topicRouteData;
+				}
 			}
 
 			m_lockNamesrv.Unlock();
