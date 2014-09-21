@@ -298,6 +298,7 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 														true);
 	
 	{
+		responseFuture->IncRef();
 		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
 		m_responseTable.insert(std::pair<int,ResponseFuture*>(request->getOpaque(), responseFuture));
 	}
@@ -312,9 +313,15 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		//TODO close socket?
 		{
 			kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
-			m_responseTable.erase(m_responseTable.find(request->getOpaque()));
-			delete responseFuture;
+			std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(request->getOpaque());
+			if (it != m_responseTable.end())
+			{
+				it->second->DecRef();
+				m_responseTable.erase(it);
+			}
 		}
+
+		responseFuture->DecRef();
 
 		return NULL;
 	}
@@ -323,7 +330,7 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 	if (responseCommand ==NULL)
 	{
 		// 发送请求成功，读取应答超时
-		if (responseFuture->isSendRequestOK())
+		if (ret == 0)
 		{
 			
 		}
@@ -332,7 +339,19 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		}
 	}
 
-	//TODO delete responseFuture
+	// 如果发现，说明超时，所以可以在这里删除
+	// 如果没有发现，说明已经在处理了，那么就在处理的地方删除
+	{
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+		std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(request->getOpaque());
+		if (it != m_responseTable.end())
+		{
+			it->second->DecRef();
+			m_responseTable.erase(it);
+		}
+	}
+
+	responseFuture->DecRef();
 
 	return responseCommand;
 }
@@ -349,6 +368,7 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 														true);
 	
 	{
+		responseFuture->IncRef();
 		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
 		m_responseTable.insert(std::pair<int,ResponseFuture*>(request->getOpaque(), responseFuture));
 	}
@@ -361,9 +381,15 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 	else
 	{
 		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
-		m_responseTable.erase(m_responseTable.find(request->getOpaque()));
-		delete responseFuture;
+		std::map<int,ResponseFuture*>::iterator it = m_responseTable.find(request->getOpaque());
+		if (it != m_responseTable.end())
+		{
+			it->second->DecRef();
+			m_responseTable.erase(it);
+		}
 	}
+
+	responseFuture->DecRef();
 
 	return ret;
 }

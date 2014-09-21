@@ -51,8 +51,9 @@ void  ResponseFuture::executeInvokeCallback()
 	if (m_pInvokeCallback != NULL)
 	{
 		m_pInvokeCallback->operationComplete(this);
-		delete this;
 	}
+
+	DecRef();
 }
 
 void  ResponseFuture::release()
