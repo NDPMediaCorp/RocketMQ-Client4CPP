@@ -30,6 +30,7 @@ ResponseFuture::ResponseFuture(int requestCode,int opaque, int timeoutMillis, In
 	m_pResponseCommand=NULL;
 	m_notifyFlag = false;
 	m_pMonitor = NULL;
+	m_sendRequestOK = false;
 
 	if (block)
 	{
@@ -49,15 +50,8 @@ void  ResponseFuture::executeInvokeCallback()
 {
 	if (m_pInvokeCallback != NULL)
 	{
-		if (m_exec++==0)
-		{
-			m_pInvokeCallback->operationComplete(this);
-			m_exec--;
-			if (m_exec==0)
-			{
-				delete this;
-			}
-		}
+		m_pInvokeCallback->operationComplete(this);
+		delete this;
 	}
 }
 

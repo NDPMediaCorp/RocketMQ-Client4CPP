@@ -310,13 +310,12 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 	else
 	{
 		//TODO close socket?
-		responseFuture->setSendRequestOK(false);
 		{
 			kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
 			m_responseTable.erase(m_responseTable.find(request->getOpaque()));
+			delete responseFuture;
 		}
 
-		delete responseFuture;
 		return NULL;
 	}
 
@@ -333,7 +332,7 @@ RemotingCommand* TcpRemotingClient::invokeSyncImpl( TcpTransport* pTts,
 		}
 	}
 
-	delete responseFuture;
+	//TODO delete responseFuture
 
 	return responseCommand;
 }
@@ -361,7 +360,9 @@ int TcpRemotingClient::invokeAsyncImpl( TcpTransport* pTts,
 	}
 	else
 	{
-		responseFuture->setSendRequestOK(false);
+		kpr::ScopedLock<kpr::Mutex> lock(m_responseTableMutex);
+		m_responseTable.erase(m_responseTable.find(request->getOpaque()));
+		delete responseFuture;
 	}
 
 	return ret;
