@@ -20,6 +20,31 @@
 
 #ifdef WIN32
 
+//  InterlockedExchangeAdd
+long MyInterlockedExchangeAdd(long volatile* addend,long value);
+long long MyInterlockedExchangeAdd(long long volatile* addend,long long value);
+
+// InterlockedIncrement
+long MyInterlockedIncrement(long volatile* addend);
+long long MyInterlockedIncrement(long long volatile* addend);
+
+// InterlockedDecrement
+long MyInterlockedDecrement(long volatile* addend);
+long long MyInterlockedDecrement(long long volatile* addend);
+
+// InterlockedExchange
+long MyInterlockedExchange(long volatile* target,long value);
+long long MyInterlockedExchange(long long volatile* target,long long value);
+
+//InterlockedCompareExchange
+long MyInterlockedCompareExchange(long volatile* destination,
+									long exchange,
+									long comparand);
+long long MyInterlockedCompareExchange(long long volatile* destination,
+									long long exchange,
+									long long comparand);
+
+
 template <class T>
 class AtomicValue
 {
@@ -40,37 +65,37 @@ public:
 
 	inline T operator+=(T n)
 	{
-		return InterlockedExchangeAdd(&value,n)+n;
+		return MyInterlockedExchangeAdd(&value,n)+n;
 	}
 
 	inline T operator-=(T n)
 	{
-		return InterlockedExchangeAdd(&value,-1*n)-n;
+		return MyInterlockedExchangeAdd(&value,-1*n)-n;
 	}
 
 	inline T operator++()
 	{
-		return InterlockedIncrement((T*)&value);
+		return MyInterlockedIncrement((T*)&value);
 	}
 
 	inline T operator--()
 	{
-		return InterlockedDecrement((T*)&value);
+		return MyInterlockedDecrement((T*)&value);
 	}
 
 	inline T fetchAndAdd(T n)
 	{
-		return InterlockedExchangeAdd((T*)&value,n);
+		return MyInterlockedExchangeAdd((T*)&value,n);
 	}
 
 	inline T fetchAndSub(T n)
 	{
-		return InterlockedExchangeAdd((T*)&value,-1*n);
+		return MyInterlockedExchangeAdd((T*)&value,-1*n);
 	}
 
 	inline T CompareAndSet(T comparand,T exchange)
 	{
-		return InterlockedCompareExchange((T*)&value, exchange, comparand);
+		return MyInterlockedCompareExchange((T*)&value, exchange, comparand);
 	}
 
 	inline T operator++(int)
@@ -95,7 +120,7 @@ public:
 
 	void Set(T n)
 	{
-		InterlockedExchange((T*)&value,n);
+		MyInterlockedExchange((T*)&value,n);
 	}
 
 private:
@@ -103,7 +128,7 @@ private:
 };
 
 typedef AtomicValue<long> AtomicInteger;
-typedef AtomicValue<long> AtomicLong;
+typedef AtomicValue<long long> AtomicLong;
 
 #else
 template <class T>

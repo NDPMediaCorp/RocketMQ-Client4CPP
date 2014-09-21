@@ -337,7 +337,7 @@ void ConsumeConcurrentlyRequest::Do()
 		//TODO "consumeMessage exception: {} Group: {} Msgs: {} MQ: {}"
 	}
 
-	long consumeRT = long(GetCurrentTimeMillis() - beginTimestamp);
+	long long consumeRT = GetCurrentTimeMillis() - beginTimestamp;
 
 	// Ö´ÐÐHook
 	if (m_pService->getDefaultMQPushConsumerImpl()->hasHook())

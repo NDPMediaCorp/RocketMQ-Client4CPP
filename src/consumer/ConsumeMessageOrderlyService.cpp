@@ -417,7 +417,7 @@ void ConsumeOrderlyRequest::Do()
 						//	messageQueue);
 					}
 
-					long consumeRT = long (GetCurrentTimeMillis() - beginTimestamp);
+					long long consumeRT = GetCurrentTimeMillis() - beginTimestamp;
 
 					// 用户抛出异常或者返回null，都挂起队列
 					//if (null == status) {

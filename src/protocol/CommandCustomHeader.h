@@ -167,4 +167,58 @@ public:
 	int delayLevel;
 };
 
+/**
+ *  QueryConsumerOffsetRequestHeader 
+ */
+class QueryConsumerOffsetRequestHeader : public CommandCustomHeader
+{
+public:
+	QueryConsumerOffsetRequestHeader();
+	~QueryConsumerOffsetRequestHeader();
+
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+
+public:
+	std::string consumerGroup;
+	std::string topic;
+	int queueId;
+};
+
+/**
+ *  QueryConsumerOffsetResponseHeader 
+ */
+class QueryConsumerOffsetResponseHeader : public CommandCustomHeader
+{
+public:
+	QueryConsumerOffsetResponseHeader();
+	~QueryConsumerOffsetResponseHeader();
+
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+
+public:
+	long long offset;
+};
+
+
+/**
+ *  UpdateConsumerOffsetRequestHeader 
+ */
+class UpdateConsumerOffsetRequestHeader : public CommandCustomHeader
+{
+public:
+	UpdateConsumerOffsetRequestHeader();
+	~UpdateConsumerOffsetRequestHeader();
+
+	virtual void Encode(std::string& outData);
+	static CommandCustomHeader* Decode(char* pData,int len);
+
+public:
+	std::string consumerGroup;
+	std::string topic;
+	int queueId;
+	long long commitOffset;
+};
+
 #endif

@@ -380,8 +380,41 @@ long long MQClientAPIImpl::queryConsumerOffset(const std::string& addr,
 												QueryConsumerOffsetRequestHeader* pRequestHeader,
 												int timeoutMillis)
 {
-	//TODO
-	return 0;
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		pRequestHeader->consumerGroup = VirtualEnvUtil::buildWithProjectGroup(
+			pRequestHeader->consumerGroup, m_projectGroupPrefix);
+		pRequestHeader->topic = VirtualEnvUtil::buildWithProjectGroup(pRequestHeader->topic,
+			m_projectGroupPrefix);
+	}
+
+	RemotingCommand* request =
+		RemotingCommand::createRequestCommand(QUERY_CONSUMER_OFFSET_VALUE, pRequestHeader);
+
+	request->Encode();
+
+	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
+
+	switch (response->getCode())
+	{
+	case SUCCESS_VALUE:
+		{
+			QueryConsumerOffsetResponseHeader* ret = (QueryConsumerOffsetResponseHeader*)response->getCommandCustomHeader();
+			long long offset = ret->offset;
+
+			delete request;
+			delete response;
+			delete ret;
+
+			return offset;
+		}
+	default:
+		break;
+	}
+
+	//throw new MQBrokerException(response.getCode(), response.getRemark());
+	return -1;
 }
 
 void MQClientAPIImpl::updateConsumerOffset(const std::string& addr,
@@ -395,7 +428,23 @@ void MQClientAPIImpl::updateConsumerOffsetOneway(const std::string& addr,
 												UpdateConsumerOffsetRequestHeader* pRequestHeader,
 												int timeoutMillis)
 {
-	//TODO
+	// 添加虚拟运行环境相关的projectGroupPrefix
+	if (!UtilAll::isBlank(m_projectGroupPrefix))
+	{
+		pRequestHeader->consumerGroup = VirtualEnvUtil::buildWithProjectGroup(
+			pRequestHeader->consumerGroup, m_projectGroupPrefix);
+		pRequestHeader->topic = VirtualEnvUtil::buildWithProjectGroup(pRequestHeader->topic,
+			m_projectGroupPrefix);
+	}
+
+	RemotingCommand* request =
+		RemotingCommand::createRequestCommand(UPDATE_CONSUMER_OFFSET_VALUE, pRequestHeader);
+
+	request->Encode();
+
+	m_pRemotingClient->invokeOneway(addr, request, timeoutMillis);
+
+	delete request;
 }
 
 void MQClientAPIImpl::sendHearbeat(const std::string& addr, HeartbeatData* pHeartbeatData, int timeoutMillis)

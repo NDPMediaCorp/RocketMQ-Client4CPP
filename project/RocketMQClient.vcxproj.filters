@@ -173,6 +173,9 @@
     <ClCompile Include="..\src\consumer\ConsumeType.cpp">
       <Filter>cosumer</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\kpr\AtomicValue.cpp">
+      <Filter>kpr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\producer\LocalTransactionExecuter.h">
