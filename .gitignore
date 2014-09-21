@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+./bin/*
+./example/simple/Debug
+./example/simple/Release
+./project/RocketMQClient.vcxproj.user
+./test/benchmark/Producer.vcxproj.user
+./test/benchmark/Debug/*
+*.sdf
