@@ -49,9 +49,11 @@ void ConsumerInvokeCallback::operationComplete(ResponseFuture* pResponseFuture)
 			response->SetBody(NULL,0,false);
 
 			m_pPullCallback->onSuccess(*pullResult);
-			
-			//TODO 需要先处理好PullResult的Message，才能删除PullResult
-			//delete pullResult;
+
+			// 因为消息放到消费队列消费，而在删除pullResult时会删除消息
+			// 所以这里清空消息列表
+			pullResult->msgFoundList.clear();
+			delete pullResult;
 		}
 		catch (MQException& e)
 		{

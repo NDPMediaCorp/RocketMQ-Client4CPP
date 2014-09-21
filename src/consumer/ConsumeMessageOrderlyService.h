@@ -37,7 +37,7 @@ class ConsumeOrderlyRequest: public ThreadPoolWork
 {
 public:
 	ConsumeOrderlyRequest(ProcessQueue* pProcessQueue,
-						  MessageQueue* pMessageQueue,
+						  MessageQueue& messageQueue,
 						  ConsumeMessageOrderlyService* pService);
 	~ConsumeOrderlyRequest();
 
@@ -48,14 +48,14 @@ public:
 		return m_pProcessQueue;
 	}
 	
-	MessageQueue* getMessageQueue()
+	MessageQueue& getMessageQueue()
 	{
-		return m_pMessageQueue;
+		return m_messageQueue;
 	}
 
 private:
 	ProcessQueue* m_pProcessQueue;
-	MessageQueue* m_pMessageQueue;
+	MessageQueue& m_messageQueue;
 	ConsumeMessageOrderlyService* m_pService;
 };
 
@@ -75,10 +75,10 @@ public:
 	void unlockAllMQ();
 	void lockMQPeriodically();
 	bool lockOneMQ(MessageQueue& mq);
-	void tryLockLaterAndReconsume(MessageQueue* pMessageQueue,
+	void tryLockLaterAndReconsume(MessageQueue& messageQueue,
 									ProcessQueue* pProcessQueue,
 									long long delayMills);
-	bool processConsumeResult(std::list<MessageExt*>* pMsgs,
+	bool processConsumeResult(std::list<MessageExt*>& msgs,
 		ConsumeOrderlyStatus status,
 		ConsumeOrderlyContext& context,
 		ConsumeOrderlyRequest& consumeRequest);
@@ -88,12 +88,12 @@ public:
 	* 在Consumer本地定时线程中定时重试
 	*/
 	void submitConsumeRequestLater(ProcessQueue* pProcessQueue,
-									MessageQueue* pMessageQueue,
+									MessageQueue& messageQueue,
 									long long suspendTimeMillis);
 
-	void submitConsumeRequest(std::list<MessageExt*>* pMsgs,
+	void submitConsumeRequest(std::list<MessageExt*>& msgs,
 								ProcessQueue* pProcessQueue,
-								MessageQueue* pMessageQueue,
+								MessageQueue& messageQueue,
 								bool dispathToConsume);
 
 	void updateCorePoolSize(int corePoolSize);

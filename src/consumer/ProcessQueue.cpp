@@ -113,6 +113,9 @@ long long ProcessQueue::removeMessage(const std::list<MessageExt*>& msgs)
 			{
 				MessageExt* msg = (*it);
 				m_msgTreeMap.erase(msg->getQueueOffset());
+
+				//TODO delete message?
+				delete msg;
 			}
 
 			m_msgCount-=msgs.size();

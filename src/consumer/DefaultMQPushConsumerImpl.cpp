@@ -840,12 +840,14 @@ void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
 					.pullTimesTotal++;
 				m_pDefaultMQPushConsumerImpl->getConsumerStatManager()->getConsumertat()
 					.pullRTTotal.fetchAndAdd(pullRT);
+
 				ProcessQueue* processQueue= m_pPullRequest->getProcessQueue();
 				bool dispathToConsume = processQueue->putMessage(pPullResult->msgFoundList);
+
 				m_pDefaultMQPushConsumerImpl->m_pConsumeMessageService->submitConsumeRequest(//
-					&pPullResult->msgFoundList, //
+					pPullResult->msgFoundList, //
 					processQueue, //
-					m_pPullRequest->getMessageQueue(), //
+					*m_pPullRequest->getMessageQueue(), //
 					dispathToConsume);
 
 				// Á÷¿Ø

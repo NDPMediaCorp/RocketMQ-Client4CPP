@@ -507,6 +507,8 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 		removeUnnecessaryMessageQueue(mq, *pq);
 		//TODO log.info("doRebalance, {}, remove unnecessary mq, {}",
 		//	consumerGroup, mq);
+
+		//TODO ‘ı√¥…æ≥˝ProcessQueue£ø
 	}
 
 	tmp.clear();
