@@ -613,8 +613,41 @@ MQConsumerInner* MQClientFactory::selectConsumer(const std::string& group)
 
 FindBrokerResult MQClientFactory::findBrokerAddressInAdmin(const std::string& brokerName)
 {
-	//TODO
 	FindBrokerResult result;
+	std::string brokerAddr;
+	bool slave = false;
+	bool found = false;
+	kpr::ScopedLock<kpr::Mutex> lock(m_brokerAddrTableLock);
+	std::map<std::string, std::map<int, std::string> >::iterator it = m_brokerAddrTable.find(brokerName);
+
+	if (it!=m_brokerAddrTable.end())
+	{
+		// TODO 如果有多个Slave，可能会每次都选中相同的Slave，这里需要优化
+		std::map<int, std::string>::iterator it1 = it->second.begin();
+		for (;it1!=it->second.end();it1++)
+		{
+			int id = it1->first;
+			brokerAddr = it1->second;
+			if (!brokerAddr.empty())
+			{
+				found = true;
+				if (MixAll::MASTER_ID == id)
+				{
+					slave = false;
+				}
+				else
+				{
+					slave = true;
+				}
+
+				break;
+			}
+		}
+	}
+
+	result.brokerAddr = brokerAddr;
+	result.slave = slave;
+
 	return result;
 }
 
