@@ -43,6 +43,7 @@
     <ClCompile Include="..\src\consumer\RemoteBrokerOffsetStore.cpp" />
     <ClCompile Include="..\src\consumer\SubscriptionData.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
+    <ClCompile Include="..\src\kpr\AtomicValue.cpp" />
     <ClCompile Include="..\src\kpr\Condition.cpp" />
     <ClCompile Include="..\src\kpr\KPRUtil.cpp" />
     <ClCompile Include="..\src\kpr\Monitor.cpp" />

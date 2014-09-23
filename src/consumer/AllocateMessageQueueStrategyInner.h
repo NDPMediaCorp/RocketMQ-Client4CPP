@@ -16,6 +16,8 @@
 #if!defined __ALLOCATEMESSAGEQUEUESTRATEGYINNER_H__
 #define __ALLOCATEMESSAGEQUEUESTRATEGYINNER_H__
 
+#include <algorithm>
+
 #include "AllocateMessageQueueStrategy.h"
 #include "MQClientException.h"
 

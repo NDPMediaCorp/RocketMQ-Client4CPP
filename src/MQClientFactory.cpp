@@ -20,6 +20,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "RemoteClientConfig.h"
 #include "ClientRemotingProcessor.h"
