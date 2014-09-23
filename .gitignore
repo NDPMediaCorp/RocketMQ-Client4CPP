@@ -12,10 +12,21 @@
 *.la
 *.a
 
-./bin/*
-./example/simple/Debug
-./example/simple/Release
-./project/RocketMQClient.vcxproj.user
-./test/benchmark/Producer.vcxproj.user
-./test/benchmark/Debug/*
+example/simple/Debug/
+example/simple/Release/
+test/benchmark/Debug/
 *.sdf
+*.obj
+*.tlog
+*.user
+*.rc;
+*.manifest
+*.res
+*.manifest
+*.idb
+*.suo
+*.pdb
+bin/
+
+libs/jsoncpp/lib/json_vc2010_libmtd.lib
+*.opensdf
