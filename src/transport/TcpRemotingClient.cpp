@@ -273,7 +273,10 @@ void TcpRemotingClient::ProcessData( std::string* pData )
 		}
 		else
 		{
-			//TODO 没找到，丢弃？
+			//TODO 没找到，丢弃,需要记录日志
+			delete pData;
+			delete cmd;
+			return;
 		}
 	}
 	else
@@ -445,7 +448,8 @@ void TcpRemotingClient::processResponseCommand(RemotingCommand* pCmd)
 	}
 	else
 	{
-		//TODO 没找到，丢弃？
+		//TODO 没找到，丢弃？ 需要记录日志
+		delete pCmd;
 	}
 }
 
