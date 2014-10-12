@@ -182,6 +182,7 @@ void MQClientAPIImpl::createTopic(const std::string& addr,
 		THROW_MQEXCEPTION(MQClientException, remark,repCode);
 	}
 
+	delete request;
 	THROW_MQEXCEPTION(MQClientException, "createTopic failed",-1);
 }
 
@@ -355,6 +356,7 @@ std::list<std::string> MQClientAPIImpl::getConsumerIdListByGroup(const std::stri
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	THROW_MQEXCEPTION(MQClientException, "getConsumerIdListByGroup failed",-1);
 }
 
@@ -405,7 +407,6 @@ long long MQClientAPIImpl::queryConsumerOffset(const std::string& addr,
 
 			delete request;
 			delete response;
-			delete ret;
 
 			return offset;
 		}
@@ -513,6 +514,7 @@ void MQClientAPIImpl::sendHearbeat(const std::string& addr, HeartbeatData* pHear
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	THROW_MQEXCEPTION(MQClientException, "sendHearbeat failed",-1);
 }
 
@@ -602,6 +604,7 @@ void MQClientAPIImpl::consumerSendMessageBack(MessageExt& msg,
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	THROW_MQEXCEPTION(MQClientException, "consumerSendMessageBack failed",-1);
 }
 
@@ -673,6 +676,7 @@ std::set<MessageQueue> MQClientAPIImpl::lockBatchMQ(const std::string& addr,
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	THROW_MQEXCEPTION(MQClientException, "lockBatchMQ failed",-1);
 }
 
@@ -707,6 +711,7 @@ void MQClientAPIImpl::unlockBatchMQ(const std::string& addr,
 	if (oneway)
 	{
 		m_pRemotingClient->invokeOneway(addr, request, timeoutMillis);
+		delete request;
 	}
 	else
 	{
@@ -732,6 +737,7 @@ void MQClientAPIImpl::unlockBatchMQ(const std::string& addr,
 			THROW_MQEXCEPTION(MQClientException, remark, repCode);
 		}
 
+		delete request;
 		THROW_MQEXCEPTION(MQClientException, "unlockBatchMQ failed",-1);
 	}
 }
@@ -835,6 +841,7 @@ TopicRouteData* MQClientAPIImpl::getDefaultTopicRouteInfoFromNameServer(const st
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	return NULL;
 }
 
@@ -889,6 +896,8 @@ TopicRouteData* MQClientAPIImpl::getTopicRouteInfoFromNameServer(const std::stri
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
+
 	return NULL;
 }
 
@@ -941,6 +950,7 @@ TopicList* MQClientAPIImpl::getTopicListFromNameServer( int timeoutMillis)
 		THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	}
 
+	delete request;
 	return NULL;
 }
 
