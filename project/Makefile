@@ -33,7 +33,7 @@ LIBPATH := -L$(TOPDIR)/libs/jsoncpp/lib
 INCLUDEPATH :=  -I$(TOPDIR)/include -I$(TOPDIR)/libs/jsoncpp/include $(addprefix -I ,$(DIRS))
 
 CC= g++
-CFLAGS := -g -fPIC -Wno-deprecated -mtune=i686 $(ARCH) $(OUTTYPE)
+CFLAGS := -g -fPIC -Wno-deprecated -mtune=generic -std=c++11 $(ARCH) $(OUTTYPE)
 LDFLAGS := -shared -fPIC
 CXXFLAGS := $(CFLAGS) $(INCLUDEPATH)
 
