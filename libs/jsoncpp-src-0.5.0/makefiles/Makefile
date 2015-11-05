@@ -31,7 +31,7 @@ INCLUDEPATH :=  -I$(TOPDIR)/include $(addprefix -I ,$(DIRS))
 
 CC := g++
 AR := ar
-CFLAGS := -g -fPIC -Wno-deprecated -O2 -mtune=i686 $(ARCH) $(OUTTYPE)
+CFLAGS := -g -fPIC -Wno-deprecated -O2 -mtune=generic $(ARCH) $(OUTTYPE)
 LDFLAGS := -fPIC
 CXXFLAGS := $(CFLAGS) $(INCLUDEPATH)
 
