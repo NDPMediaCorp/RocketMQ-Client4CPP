@@ -7,4 +7,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I../../include")
 set(SOURCE_FILES Producer.cpp)
 LINK_LIBRARIES(rocketmq64)
 
+include_directories(../../include)
+
 add_executable(simple ${SOURCE_FILES})
