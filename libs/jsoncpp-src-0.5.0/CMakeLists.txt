@@ -19,7 +19,7 @@ set(SOURCE_FILES
         src/lib_json/json_writer.cpp
         src/lib_json/json_batchallocator.h)
 
-add_library(jsoncpp ${SOURCE_FILES})
+add_library(jsoncpp SHARED ${SOURCE_FILES})
 include_directories(include)
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)

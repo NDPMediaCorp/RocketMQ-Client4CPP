@@ -9,8 +9,9 @@ set(SOURCE_FILES Producer.cpp)
 
 # link against shared library in /usr/lib/librocketmq64.so
 LINK_LIBRARIES(rocketmq64)
+LINK_LIBRARIES(pthread)
+LINK_LIBRARIES(z)
 
 include_directories(../../include)
-
 add_executable(simple ${SOURCE_FILES})
 # target_link_libraries(rocketmq64)
