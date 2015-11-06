@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project(jsoncpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++11 -fPIC")
 
 set(SOURCE_FILES
         include/json/autolink.h
@@ -22,5 +22,5 @@ set(SOURCE_FILES
 add_library(jsoncpp ${SOURCE_FILES})
 include_directories(include)
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../lib)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set_target_properties(jsoncpp PROPERTIES OUTPUT_NAME jsoncpp64)

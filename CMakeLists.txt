@@ -1,0 +1,198 @@
+cmake_minimum_required(VERSION 3.2)
+project(rocketmq64)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++11 -fPIC")
+add_subdirectory(libs/jsoncpp-src-0.5.0)
+
+include_directories(libs/jsoncpp/include)
+include_directories(libs/zlib/include)
+include_directories(include)
+include_directories(src)
+include_directories(src/common)
+include_directories(src/consumer)
+include_directories(src/kpr)
+include_directories(src/message)
+include_directories(src/producer)
+include_directories(src/protocol)
+include_directories(src/transport)
+
+set(SOURCE_FILES
+        include/AllocateMessageQueueStrategy.h
+        include/ClientConfig.h
+        include/ConsumeMessageHook.h
+        include/ConsumeType.h
+        include/DefaultMQProducer.h
+        include/DefaultMQPullConsumer.h
+        include/DefaultMQPushConsumer.h
+        include/Message.h
+        include/MessageExt.h
+        include/MessageListener.h
+        include/MessageQueue.h
+        include/MessageQueueListener.h
+        include/MQAdmin.h
+        include/MQClientException.h
+        include/MQConsumer.h
+        include/MQProducer.h
+        include/MQPullConsumer.h
+        include/MQPushConsumer.h
+        include/OffsetStore.h
+        include/PullCallback.h
+        include/PullResult.h
+        include/QueryResult.h
+        include/RocketMQClient.h
+        include/SendCallback.h
+        include/SendMessageHook.h
+        include/SendResult.h
+        include/TopicFilterType.h
+        src/common/ConsumeStats.h
+        src/common/FilterAPI.h
+        src/common/MessageSysFlag.cpp
+        src/common/MessageSysFlag.h
+        src/common/MixAll.cpp
+        src/common/MixAll.h
+        src/common/MQVersion.cpp
+        src/common/MQVersion.h
+        src/common/NamesrvConfig.h
+        src/common/NamesrvUtil.h
+        src/common/PermName.cpp
+        src/common/PermName.h
+        src/common/PullSysFlag.cpp
+        src/common/PullSysFlag.h
+        src/common/SendResult.cpp
+        src/common/ServiceState.h
+        src/common/ServiceThread.cpp
+        src/common/ServiceThread.h
+        src/common/SubscriptionGroupConfig.h
+        src/common/TopAddressing.h
+        src/common/TopicConfig.cpp
+        src/common/TopicConfig.h
+        src/common/TopicStatsTable.h
+        src/common/UtilAll.h
+        src/common/Validators.cpp
+        src/common/Validators.h
+        src/common/VirtualEnvUtil.cpp
+        src/common/VirtualEnvUtil.h
+        src/consumer/AllocateMessageQueueStrategyInner.h
+        src/consumer/ConsumeMessageConcurrentlyService.cpp
+        src/consumer/ConsumeMessageConcurrentlyService.h
+        src/consumer/ConsumeMessageOrderlyService.cpp
+        src/consumer/ConsumeMessageOrderlyService.h
+        src/consumer/ConsumeMessageService.h
+        src/consumer/ConsumerInvokeCallback.cpp
+        src/consumer/ConsumerInvokeCallback.h
+        src/consumer/ConsumerStatManage.h
+        src/consumer/DefaultMQPullConsumer.cpp
+        src/consumer/DefaultMQPullConsumerImpl.cpp
+        src/consumer/DefaultMQPullConsumerImpl.h
+        src/consumer/DefaultMQPushConsumer.cpp
+        src/consumer/DefaultMQPushConsumerImpl.cpp
+        src/consumer/DefaultMQPushConsumerImpl.h
+        src/consumer/LocalFileOffsetStore.cpp
+        src/consumer/LocalFileOffsetStore.h
+        src/consumer/MessageQueueLock.h
+        src/consumer/MQConsumerInner.h
+        src/consumer/ProcessQueue.cpp
+        src/consumer/ProcessQueue.h
+        src/consumer/PullAPIWrapper.cpp
+        src/consumer/PullAPIWrapper.h
+        src/consumer/PullMessageService.cpp
+        src/consumer/PullMessageService.h
+        src/consumer/PullRequest.cpp
+        src/consumer/PullRequest.h
+        src/consumer/PullResultExt.h
+        src/consumer/RebalanceImpl.cpp
+        src/consumer/RebalanceImpl.h
+        src/consumer/RebalancePullImpl.cpp
+        src/consumer/RebalancePullImpl.h
+        src/consumer/RebalancePushImpl.cpp
+        src/consumer/RebalancePushImpl.h
+        src/consumer/RebalanceService.cpp
+        src/consumer/RebalanceService.h
+        src/consumer/RemoteBrokerOffsetStore.cpp
+        src/consumer/RemoteBrokerOffsetStore.h
+        src/consumer/SubscriptionData.cpp
+        src/consumer/SubscriptionData.h
+        src/kpr/AtomicValue.h
+        src/kpr/Condition.cpp
+        src/kpr/Condition.h
+        src/kpr/Exception.h
+        src/kpr/KPRTypes.h
+        src/kpr/KPRUtil.cpp
+        src/kpr/KPRUtil.h
+        src/kpr/Monitor.cpp
+        src/kpr/Monitor.h
+        src/kpr/Mutex.cpp
+        src/kpr/Mutex.h
+        src/kpr/RefCount.cpp
+        src/kpr/RefCount.h
+        src/kpr/RefHandle.h
+        src/kpr/ScopedLock.h
+        src/kpr/Semaphore.cpp
+        src/kpr/Semaphore.h
+        src/kpr/Thread.cpp
+        src/kpr/Thread.h
+        src/kpr/ThreadLocal.cpp
+        src/kpr/ThreadLocal.h
+        src/kpr/ThreadPool.cpp
+        src/kpr/ThreadPool.h
+        src/kpr/ThreadPoolWork.h
+        src/kpr/TimerTaskManager.cpp
+        src/kpr/TimerTaskManager.h
+        src/kpr/TimerThread.cpp
+        src/kpr/TimerThread.h
+        src/message/Message.cpp
+        src/message/MessageDecoder.cpp
+        src/message/MessageDecoder.h
+        src/message/MessageExt.cpp
+        src/message/MessageId.h
+        src/message/MessageQueue.cpp
+        src/producer/DefaultMQProducer.cpp
+        src/producer/DefaultMQProducerImpl.cpp
+        src/producer/DefaultMQProducerImpl.h
+        src/producer/LocalTransactionExecuter.h
+        src/producer/MessageQueueSelector.h
+        src/producer/MQProducerInner.h
+        src/producer/ProducerInvokeCallback.cpp
+        src/producer/ProducerInvokeCallback.h
+        src/producer/TopicPublishInfo.h
+        src/producer/TransactionCheckListener.h
+        src/producer/TransactionMQProducer.h
+        src/protocol/CommandCustomHeader.cpp
+        src/protocol/CommandCustomHeader.h
+        src/protocol/GetConsumerListByGroupResponseBody.h
+        src/protocol/HeartbeatData.h
+        src/protocol/KVTable.h
+        src/protocol/LockBatchBody.cpp
+        src/protocol/LockBatchBody.h
+        src/protocol/MQProtos.h
+        src/protocol/RemotingCommand.cpp
+        src/protocol/RemotingCommand.h
+        src/protocol/RemotingSerializable.h
+        src/protocol/TopicList.h
+        src/protocol/TopicRouteData.h
+        src/transport/InvokeCallback.h
+        src/transport/RemoteClientConfig.h
+        src/transport/ResponseFuture.cpp
+        src/transport/ResponseFuture.h
+        src/transport/SocketUtil.cpp
+        src/transport/SocketUtil.h
+        src/transport/TcpRemotingClient.cpp
+        src/transport/TcpRemotingClient.h
+        src/transport/TcpRequestProcessor.h
+        src/transport/TcpTransport.cpp
+        src/transport/TcpTransport.h
+        src/ClientConfig.cpp
+        src/ClientRemotingProcessor.cpp
+        src/ClientRemotingProcessor.h
+        src/CommunicationMode.h
+        src/FindBrokerResult.h
+        src/MQAdminImpl.cpp
+        src/MQAdminImpl.h
+        src/MQClientAPIImpl.cpp
+        src/MQClientAPIImpl.h
+        src/MQClientFactory.cpp
+        src/MQClientFactory.h
+        src/MQClientManager.cpp
+        src/MQClientManager.h)
+
+add_library(rocketmq64 SHARED ${SOURCE_FILES})
+target_link_libraries(rocketmq64 jsoncpp)
