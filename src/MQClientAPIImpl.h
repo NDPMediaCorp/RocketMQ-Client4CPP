@@ -333,30 +333,30 @@ public:
 
 	TcpRemotingClient* getRemotingClient();
 
+	SendResult* processSendResponse(const std::string& brokerName,
+		const std::string& topic,
+		RemotingCommand* pResponse);
+
+	PullResult* processPullResponse(RemotingCommand* pResponse);
+
 private:
 	SendResult* sendMessageSync(const std::string& addr,
 								const std::string& brokerName,
 								Message& msg,
 								int timeoutMillis,
-								RemotingCommand& request);
+								RemotingCommand* request);
 
 	void sendMessageAsync(const std::string& addr,
 							const std::string& brokerName,
 							Message& msg,
 							int timeoutMillis,
-							RemotingCommand& request,
+							RemotingCommand* request,
 							SendCallback* pSendCallback);
-
-	SendResult* processSendResponse(const std::string& brokerName,
-									Message& msg,
-									RemotingCommand* pResponse);
 
 	void pullMessageAsync(const std::string& addr,
 							RemotingCommand* pRequest,
 							int timeoutMillis,
 							PullCallback* pPullCallback);
-
-	PullResult* processPullResponse(RemotingCommand* pResponse);
 
 	PullResult* pullMessageSync(const std::string& addr,
 								RemotingCommand* pRequest,

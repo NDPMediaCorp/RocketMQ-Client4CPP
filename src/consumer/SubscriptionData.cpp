@@ -15,18 +15,22 @@
 */
 #include "SubscriptionData.h"
 
+#include <sstream>
+
+#include "KPRUtil.h"
+
 std::string SubscriptionData::SUB_ALL = "*";
 
 SubscriptionData::SubscriptionData()
 {
-
+	m_subVersion = GetCurrentTimeMillis();
 }
 
 SubscriptionData::SubscriptionData(const std::string& topic, const std::string& subString)
 	:m_topic(topic),
 	 m_subString(subString)
 {
-
+	m_subVersion = GetCurrentTimeMillis();
 }
 
 std::string SubscriptionData::getTopic()const
@@ -143,4 +147,43 @@ bool SubscriptionData::operator<(const SubscriptionData& other)const
 	{
 		return false;
 	}
+}
+
+void SubscriptionData::encode( std::string& outData )
+{
+	std::stringstream ss;
+	std::stringstream ss1;
+
+	std::set<int>::iterator it1 = m_codeSet.begin();
+	for (;it1!=m_codeSet.end();it1++)
+	{
+		ss1<<*it1<<",";
+	}
+	
+	std::string codeSet=ss1.str();
+	if (!codeSet.empty())
+	{
+		codeSet.pop_back();
+	}
+
+	std::string tagsSet;
+
+	std::set<std::string>::iterator it = m_tagsSet.begin();
+	for (;it!=m_tagsSet.end();it++)
+	{
+		tagsSet+= "\""+*it+"\",";
+	}
+
+	if (!tagsSet.empty())
+	{
+		tagsSet.pop_back();
+	}
+
+	ss<<"{"<<"\"codeSet\":["<<codeSet<<"],"
+		<<"\"subString\":\""<<m_subString<<"\","
+		<<"\"subVersion\":"<<m_subVersion<<","
+		<<"\"tagsSet\":["<<tagsSet<<"],"
+		<<"\"topic\":\""<<m_topic<<"\"}";
+
+	outData = ss.str();
 }

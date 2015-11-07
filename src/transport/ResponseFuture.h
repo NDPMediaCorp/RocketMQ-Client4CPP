@@ -18,6 +18,7 @@
 #define __RESPONSEFUTURE_H__
 
 #include "AtomicValue.h"
+#include "RefCount.h"
 
 class InvokeCallback;
 class RemotingCommand;
@@ -31,11 +32,11 @@ namespace kpr
 * 异步请求应答封装
 *
 */
-class ResponseFuture
+class ResponseFuture : public kpr::RefCount
 {
 public:
 	ResponseFuture(int requestCode,int opaque, int timeoutMillis, InvokeCallback* pInvokeCallback,bool block);
-
+	~ResponseFuture();
 	void executeInvokeCallback();
 	void release();
 	bool isTimeout();

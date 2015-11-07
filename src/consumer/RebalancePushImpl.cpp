@@ -42,9 +42,9 @@ RebalancePushImpl::RebalancePushImpl(const std::string& consumerGroup,
 {
 }
 
-void RebalancePushImpl::dispatchPullRequest(std::list<PullRequest>& pullRequestList)
+void RebalancePushImpl::dispatchPullRequest(std::list<PullRequest*>& pullRequestList)
 {
-	std::list<PullRequest>::iterator it = pullRequestList.begin();
+	std::list<PullRequest*>::iterator it = pullRequestList.begin();
 	// ≈…∑¢PullRequest
 	for (;it!=pullRequestList.end();it++)
 	{

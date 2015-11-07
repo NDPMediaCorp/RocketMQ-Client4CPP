@@ -16,6 +16,8 @@
 #if!defined __CONSUMETYPE_H__
 #define __CONSUMETYPE_H__
 
+#include "RocketMQClient.h"
+
 /**
  * 消费类型
  *
@@ -69,5 +71,9 @@ enum MessageModel
 	// */
 	// UNKNOWNS,
 };
+
+ROCKETMQCLIENT_API const char* getConsumeTypeString(ConsumeType type);
+ROCKETMQCLIENT_API const char* getConsumeFromWhereString(ConsumeFromWhere type);
+ROCKETMQCLIENT_API const char* getMessageModelString(MessageModel type);
 
 #endif

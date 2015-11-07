@@ -61,12 +61,17 @@ RemotingCommand::~RemotingCommand()
 		m_bodyLen=0;
 		m_pBody = NULL;
 	}
+
+	delete m_pCustomHeader;
 }
 
 void RemotingCommand::Encode()
 {
-	std::string extHeader;
-	m_pCustomHeader->Encode(extHeader);
+	std::string extHeader="{}";
+	if (m_pCustomHeader)
+	{
+		m_pCustomHeader->Encode(extHeader);
+	}
 
 	std::stringstream ss;
 	ss<<"{"<<CODE_STRING<<m_code<<","

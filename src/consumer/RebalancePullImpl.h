@@ -33,7 +33,7 @@ public:
 
 	long long computePullFromWhere(MessageQueue& mq);
 
-	void dispatchPullRequest(std::list<PullRequest>& pullRequestList);
+	void dispatchPullRequest(std::list<PullRequest*>& pullRequestList);
 
 	void messageQueueChanged(const std::string& topic, 
 		std::set<MessageQueue>& mqAll, 

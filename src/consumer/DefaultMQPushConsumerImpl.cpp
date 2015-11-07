@@ -42,6 +42,7 @@
 #include "PullMessageService.h"
 #include "ConsumeMessageOrderlyService.h"
 #include "ConsumeMessageConcurrentlyService.h"
+#include "KPRUtil.h"
 
 // 拉消息异常时，延迟一段时间再拉
 long long DefaultMQPushConsumerImpl::s_PullTimeDelayMillsWhenException = 3000;
@@ -59,6 +60,13 @@ DefaultMQPushConsumerImpl::DefaultMQPushConsumerImpl(DefaultMQPushConsumer* pDef
 	flowControlTimes1 = 0;
 	flowControlTimes2 = 0;
 	m_pRebalanceImpl = new RebalancePushImpl(this);
+	m_pConsumerStatManager = new ConsumerStatManager();
+	m_pMQClientFactory = NULL;
+	m_pause = false;
+	m_consumeOrderly = false;
+	m_pPullAPIWrapper = NULL;
+	m_pMessageListenerInner = NULL;
+	m_pOffsetStore = NULL;
 }
 
 bool DefaultMQPushConsumerImpl::hasHook()
@@ -243,7 +251,7 @@ bool DefaultMQPushConsumerImpl::isSubscribeTopicNeedUpdate(const std::string& to
 	if (subTable.find(topic)!=subTable.end())
 	{
 		std::map<std::string, std::set<MessageQueue> >& mqs=
-					m_pRebalanceImpl->getTopicSubscribeInfoTable();
+			m_pRebalanceImpl->getTopicSubscribeInfoTable();
 
 		return mqs.find(topic)==mqs.end();
 	}
@@ -269,29 +277,134 @@ void DefaultMQPushConsumerImpl::correctTagsOffset(PullRequest& pullRequest)
 	// 说明本地没有可消费的消息
 	if (pullRequest.getProcessQueue()->getMsgCount().Get() == 0)
 	{
-		 m_pOffsetStore->updateOffset(*(pullRequest.getMessageQueue()), pullRequest.getNextOffset(), true);
+		m_pOffsetStore->updateOffset(*(pullRequest.getMessageQueue()), pullRequest.getNextOffset(), true);
 	}
 }
 
 void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
 {
-	//TODO
+	ProcessQueue* processQueue = pPullRequest->getProcessQueue();
+	if (processQueue->isDroped())
+	{
+		//TODO log.info("the pull request[{}] is droped.", pPullRequest->toString());
+		return;
+	}
+
+	// 检测Consumer是否启动
+	try 
+	{
+		makeSureStateOK();
+	}
+	catch (MQClientException e)
+	{
+		//TODO log.warn("pullMessage exception, consumer state not ok", e);
+		executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenException);
+		return;
+	}
+
+	// 检测Consumer是否被挂起
+	if (isPause())
+	{
+		executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenSuspend);
+		return;
+	}
+
+	// 流量控制，队列中消息总数
+	long size = processQueue->getMsgCount().Get();
+	if (size > m_pDefaultMQPushConsumer->getPullThresholdForQueue())
+	{
+		executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenFlowControl);
+		if ((flowControlTimes1++ % 3000) == 0)
+		{
+			//TODO the consumer message buffer is full, so do flow control
+		}
+		return;
+	}
+
+	// 流量控制，队列中消息最大跨度
+	if (!m_consumeOrderly)
+	{
+		if (processQueue->getMaxSpan() > m_pDefaultMQPushConsumer->getConsumeConcurrentlyMaxSpan())
+		{
+			executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenFlowControl);
+			if ((flowControlTimes2++ % 3000) == 0)
+			{
+				//TODO the queue's messages, span too long, so do flow control
+			}
+			return;
+		}
+	}
+
+	// 查询订阅关系
+	std::map<std::string, SubscriptionData>& subTable = getSubscriptionInner();
+	std::string topic = pPullRequest->getMessageQueue()->getTopic();
+	std::map<std::string, SubscriptionData>::iterator it = subTable.find(topic);
+	if (it==subTable.end())
+	{
+		// 由于并发关系，即使找不到订阅关系，也要重试下，防止丢失PullRequest
+		executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenException);
+		//TODO log.warn("find the consumer's subscription failed, {}", pullRequest);
+		return;
+	}
+
+	SubscriptionData subscriptionData = it->second;
+	unsigned long long beginTimestamp = GetCurrentTimeMillis();
+
+	PullCallback* pullCallback = new DefaultMQPushConsumerImplCallback(subTable[topic],this,pPullRequest);
+
+	bool commitOffsetEnable = false;
+	long commitOffsetValue = 0L;
+	if (CLUSTERING == m_pDefaultMQPushConsumer->getMessageModel())
+	{
+		commitOffsetValue = m_pOffsetStore->readOffset(*pPullRequest->getMessageQueue(),
+			READ_FROM_MEMORY);
+		if (commitOffsetValue > 0)
+		{
+			commitOffsetEnable = true;
+		}
+	}
+
+	int sysFlag = PullSysFlag::buildSysFlag(commitOffsetEnable, // commitOffset
+		true, // suspend
+		false// subscription
+		);
+	try
+	{
+		m_pPullAPIWrapper->pullKernelImpl(
+			*pPullRequest->getMessageQueue(), // 1
+			"", // 2
+			subscriptionData.getSubVersion(), // 3
+			pPullRequest->getNextOffset(), // 4
+			m_pDefaultMQPushConsumer->getPullBatchSize(), // 5
+			sysFlag, // 6
+			commitOffsetValue,// 7
+			s_BrokerSuspendMaxTimeMillis, // 8
+			s_ConsumerTimeoutMillisWhenSuspend, // 9
+			ASYNC, // 10
+			pullCallback// 11
+			);
+	}
+	catch (MQException& e)
+	{
+		//log.error("pullKernelImpl exception", e);
+		executePullRequestLater(pPullRequest, s_PullTimeDelayMillsWhenException);
+	}
 }
 
 /**
 * 立刻执行这个PullRequest
 */
-void DefaultMQPushConsumerImpl::executePullRequestImmediately(PullRequest& pullRequest)
+void DefaultMQPushConsumerImpl::executePullRequestImmediately(PullRequest* pullRequest)
 {
-	m_pMQClientFactory->getPullMessageService()->executePullRequestImmediately(&pullRequest);
+	m_pMQClientFactory->getPullMessageService()->executePullRequestImmediately(pullRequest);
 }
 
 /**
 * 稍后再执行这个PullRequest
 */
-void DefaultMQPushConsumerImpl::executePullRequestLater(PullRequest& pullRequest, long timeDelay)
+void DefaultMQPushConsumerImpl::executePullRequestLater(PullRequest* pullRequest, long timeDelay)
 {
-	m_pMQClientFactory->getPullMessageService()->executePullRequestLater(&pullRequest, timeDelay);
+	m_pMQClientFactory->getPullMessageService()->executePullRequestLater(pullRequest, timeDelay);
 }
 
 void DefaultMQPushConsumerImpl::makeSureStateOK()
@@ -308,10 +421,10 @@ ConsumerStatManager* DefaultMQPushConsumerImpl::getConsumerStatManager()
 }
 
 QueryResult DefaultMQPushConsumerImpl::queryMessage(const std::string& topic,
-		const std::string&  key,
-		int maxNum,
-		long long begin,
-		long long end)
+	const std::string&  key,
+	int maxNum,
+	long long begin,
+	long long end)
 {
 	return m_pMQClientFactory->getMQAdminImpl()->queryMessage(topic, key, maxNum, begin, end);
 }
@@ -462,7 +575,13 @@ void DefaultMQPushConsumerImpl::start()
 	updateTopicSubscribeInfoWhenSubscriptionChanged();
 	m_pMQClientFactory->sendHeartbeatToAllBrokerWithLock();
 	m_pMQClientFactory->rebalanceImmediately();
-	//TODO 阻塞，不能退出
+
+	// 阻塞，不能退出
+
+	//while(m_serviceState != SHUTDOWN_ALREADY)
+	//{
+	//	m_runMonitor.Wait();
+	//}
 }
 
 void DefaultMQPushConsumerImpl::checkConfig()
@@ -481,7 +600,7 @@ void DefaultMQPushConsumerImpl::checkConfig()
 	if (m_pDefaultMQPushConsumer->getMessageModel()!=BROADCASTING
 		&& m_pDefaultMQPushConsumer->getMessageModel()!=CLUSTERING)
 	{
-			THROW_MQEXCEPTION(MQClientException,"messageModel is invalid ",-1);
+		THROW_MQEXCEPTION(MQClientException,"messageModel is invalid ",-1);
 	}
 
 	// allocateMessageQueueStrategy
@@ -533,42 +652,42 @@ void DefaultMQPushConsumerImpl::checkConfig()
 	if (m_pDefaultMQPushConsumer->getConsumeThreadMax() < 1
 		|| m_pDefaultMQPushConsumer->getConsumeThreadMax() > 1000)
 	{
-			THROW_MQEXCEPTION(MQClientException,"consumeThreadMax Out of range [1, 1000]",-1);
+		THROW_MQEXCEPTION(MQClientException,"consumeThreadMax Out of range [1, 1000]",-1);
 	}
 
 	// consumeConcurrentlyMaxSpan
 	if (m_pDefaultMQPushConsumer->getConsumeConcurrentlyMaxSpan() < 1
 		|| m_pDefaultMQPushConsumer->getConsumeConcurrentlyMaxSpan() > 65535)
 	{
-			THROW_MQEXCEPTION(MQClientException,"consumeConcurrentlyMaxSpan Out of range [1, 65535]" ,-1);
+		THROW_MQEXCEPTION(MQClientException,"consumeConcurrentlyMaxSpan Out of range [1, 65535]" ,-1);
 	}
 
 	// pullThresholdForQueue
 	if (m_pDefaultMQPushConsumer->getPullThresholdForQueue() < 1
 		|| m_pDefaultMQPushConsumer->getPullThresholdForQueue() > 65535)
 	{
-			THROW_MQEXCEPTION(MQClientException,"pullThresholdForQueue Out of range [1, 65535]",-1);
+		THROW_MQEXCEPTION(MQClientException,"pullThresholdForQueue Out of range [1, 65535]",-1);
 	}
 
 	// pullInterval
 	if (m_pDefaultMQPushConsumer->getPullInterval() < 0
 		|| m_pDefaultMQPushConsumer->getPullInterval() > 65535)
 	{
-			THROW_MQEXCEPTION(MQClientException,"pullInterval Out of range [0, 65535]",-1);
+		THROW_MQEXCEPTION(MQClientException,"pullInterval Out of range [0, 65535]",-1);
 	}
 
 	// consumeMessageBatchMaxSize
 	if (m_pDefaultMQPushConsumer->getConsumeMessageBatchMaxSize() < 1
 		|| m_pDefaultMQPushConsumer->getConsumeMessageBatchMaxSize() > 1024)
 	{
-			THROW_MQEXCEPTION(MQClientException,"consumeMessageBatchMaxSize Out of range [1, 1024]",-1);
+		THROW_MQEXCEPTION(MQClientException,"consumeMessageBatchMaxSize Out of range [1, 1024]",-1);
 	}
 
 	// pullBatchSize
 	if (m_pDefaultMQPushConsumer->getPullBatchSize() < 1
 		|| m_pDefaultMQPushConsumer->getPullBatchSize() > 1024)
 	{
-			THROW_MQEXCEPTION(MQClientException,"pullBatchSize Out of range [1, 1024]",-1);
+		THROW_MQEXCEPTION(MQClientException,"pullBatchSize Out of range [1, 1024]",-1);
 	}
 }
 
@@ -616,7 +735,7 @@ void DefaultMQPushConsumerImpl::copySubscription()
 
 void DefaultMQPushConsumerImpl::updateTopicSubscribeInfoWhenSubscriptionChanged()
 {
-	std::map<std::string, SubscriptionData>& subTable = getSubscriptionInner();
+	std::map<std::string, SubscriptionData> subTable = getSubscriptionInner();
 
 	std::map<std::string, SubscriptionData>::iterator it = subTable.begin();
 	for (;it!=subTable.end();it++)
@@ -656,7 +775,7 @@ void DefaultMQPushConsumerImpl::suspend()
 
 void DefaultMQPushConsumerImpl::unsubscribe(const std::string& topic)
 {
-	 m_pRebalanceImpl->getSubscriptionInner().erase(topic);
+	m_pRebalanceImpl->getSubscriptionInner().erase(topic);
 }
 
 void DefaultMQPushConsumerImpl::updateConsumeOffset(MessageQueue& mq, long long offset)
@@ -687,4 +806,107 @@ bool DefaultMQPushConsumerImpl::isConsumeOrderly()
 void DefaultMQPushConsumerImpl::setConsumeOrderly(bool consumeOrderly)
 {
 	m_consumeOrderly = consumeOrderly;
+}
+
+/*DefaultMQPushConsumerImplCallback*/
+
+DefaultMQPushConsumerImplCallback::DefaultMQPushConsumerImplCallback(SubscriptionData& subscriptionData,
+	DefaultMQPushConsumerImpl* pDefaultMQPushConsumerImpl,
+	PullRequest* pPullRequest)
+	:m_subscriptionData(subscriptionData),
+	m_pDefaultMQPushConsumerImpl(pDefaultMQPushConsumerImpl),
+	m_pPullRequest(pPullRequest)
+{
+	m_beginTimestamp = GetCurrentTimeMillis();
+}
+
+void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
+{
+	PullResult* pPullResult = &pullResult;
+	if (pPullResult != NULL)
+	{
+		pPullResult =
+			m_pDefaultMQPushConsumerImpl->m_pPullAPIWrapper->processPullResult(
+			*m_pPullRequest->getMessageQueue(), *pPullResult, m_subscriptionData);
+
+		switch (pPullResult->pullStatus)
+		{
+		case FOUND:
+			{
+				m_pPullRequest->setNextOffset(pPullResult->nextBeginOffset);
+				//TODO 这个时间可能需要调整，目前windows下只支持32位
+				long long pullRT = GetCurrentTimeMillis() - m_beginTimestamp;
+				m_pDefaultMQPushConsumerImpl->getConsumerStatManager()->getConsumertat()
+					.pullTimesTotal++;
+				m_pDefaultMQPushConsumerImpl->getConsumerStatManager()->getConsumertat()
+					.pullRTTotal.fetchAndAdd(pullRT);
+
+				ProcessQueue* processQueue= m_pPullRequest->getProcessQueue();
+				bool dispathToConsume = processQueue->putMessage(pPullResult->msgFoundList);
+
+				m_pDefaultMQPushConsumerImpl->m_pConsumeMessageService->submitConsumeRequest(//
+					pPullResult->msgFoundList, //
+					processQueue, //
+					*m_pPullRequest->getMessageQueue(), //
+					dispathToConsume);
+
+				// 流控
+				if (m_pDefaultMQPushConsumerImpl->m_pDefaultMQPushConsumer->getPullInterval() > 0)
+				{
+					m_pDefaultMQPushConsumerImpl->executePullRequestLater(m_pPullRequest,
+						m_pDefaultMQPushConsumerImpl->m_pDefaultMQPushConsumer->getPullInterval());
+				}
+				// 立刻拉消息
+				else
+				{
+					m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
+				}
+			}
+			break;
+		case NO_NEW_MSG:
+			m_pPullRequest->setNextOffset(pPullResult->nextBeginOffset);
+
+			m_pDefaultMQPushConsumerImpl->correctTagsOffset(*m_pPullRequest);
+
+			m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
+			break;
+		case NO_MATCHED_MSG:
+			m_pPullRequest->setNextOffset(pPullResult->nextBeginOffset);
+
+			m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
+			break;
+		case OFFSET_ILLEGAL:
+			//TODO 	log.warn("the pull request offset illegal, {} {}",
+			// pullRequest.toString(), pullResult.toString());
+			if (m_pPullRequest->getNextOffset() < pPullResult->minOffset)
+			{
+				m_pPullRequest->setNextOffset(pPullResult->minOffset);
+			}
+			else if (m_pPullRequest->getNextOffset() > pPullResult->maxOffset)
+			{
+				m_pPullRequest->setNextOffset(pPullResult->maxOffset);
+			}
+
+			m_pDefaultMQPushConsumerImpl->m_pOffsetStore->updateOffset(
+				*m_pPullRequest->getMessageQueue(), m_pPullRequest->getNextOffset(), false);
+
+			// log.warn("fix the pull request offset, {}", pullRequest);
+			m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void DefaultMQPushConsumerImplCallback::onException(MQException& e)
+{
+	std::string topic = m_pPullRequest->getMessageQueue()->getTopic();
+	if (topic.find(MixAll::RETRY_GROUP_TOPIC_PREFIX)!=std::string::npos)
+	{
+		//log.warn("execute the pull request exception", e);
+	}
+
+	m_pDefaultMQPushConsumerImpl->executePullRequestLater(m_pPullRequest,
+		DefaultMQPushConsumerImpl::s_PullTimeDelayMillsWhenException);
 }

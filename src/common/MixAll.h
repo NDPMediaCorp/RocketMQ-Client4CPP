@@ -45,7 +45,7 @@ public:
 	static const std::string  ROCKETMQ_HOME_PROPERTY;
 	static const std::string MESSAGE_COMPRESS_LEVEL;
 	static std::string getRetryTopic(const std::string& consumerGroup);
-	static bool compareAndIncreaseOnly(AtomicLong& target, long value);
+	static bool compareAndIncreaseOnly(AtomicLong& target, long long value);
 };
 
 #endif

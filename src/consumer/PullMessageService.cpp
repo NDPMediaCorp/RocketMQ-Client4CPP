@@ -20,12 +20,14 @@
 #include "MQConsumerInner.h"
 #include "PullRequest.h"
 #include "DefaultMQPushConsumerImpl.h"
+#include "ScopedLock.h"
 
 
 PullMessageService::PullMessageService(MQClientFactory* pMQClientFactory)
 	:ServiceThread("PullMessageService"),
 	 m_pMQClientFactory(pMQClientFactory)
 {
+	m_TimeThread = new kpr::TimerThread("PullMessageService-timer",1000);
 }
 
 
@@ -39,7 +41,9 @@ PullMessageService::~PullMessageService()
 */
 void PullMessageService::executePullRequestLater(PullRequest* pPullRequest, long timeDelay)
 {
-
+	MyTimeHandler* handler = new MyTimeHandler(this,pPullRequest);
+	
+	m_TimeThread->RegisterTimer(0,timeDelay,handler,false);
 }
 
 
@@ -50,7 +54,12 @@ void PullMessageService::executePullRequestImmediately(PullRequest* pPullRequest
 {
 	try
 	{
-		m_pullRequestQueue.push_back(pPullRequest);
+		{
+			kpr::ScopedLock<kpr::Mutex> lock(m_lock);
+			m_pullRequestQueue.push_back(pPullRequest);
+		}
+
+		wakeup();
 	}
 	catch (...)
 	{
@@ -63,21 +72,34 @@ void PullMessageService::Run()
 	{
 		try
 		{
-			if (m_pullRequestQueue.empty())
+			bool wait = false;
+
 			{
-				Sleep(5000);
-				//Wait();
+				kpr::ScopedLock<kpr::Mutex> lock(m_lock);
+				if (m_pullRequestQueue.empty())
+				{
+					wait = true;
+				}
+			}
+			
+			if (wait)
+			{
+				waitForRunning(5000);
 			}
 
-			if (!m_pullRequestQueue.empty())
+			PullRequest* pullRequest=NULL;
 			{
-				PullRequest* pullRequest = m_pullRequestQueue.front();
-				if (pullRequest != NULL)
+				kpr::ScopedLock<kpr::Mutex> lock(m_lock);
+				if (!m_pullRequestQueue.empty())
 				{
-					pullMessage(pullRequest);
+					pullRequest = m_pullRequestQueue.front();
+					m_pullRequestQueue.pop_front();
 				}
+			}
 
-				m_pullRequestQueue.pop_front();
+			if (pullRequest != NULL)
+			{
+				pullMessage(pullRequest);
 			}
 		}
 		catch (...)
@@ -85,6 +107,9 @@ void PullMessageService::Run()
 
 		}
 	}
+
+	m_TimeThread->Close();
+	m_TimeThread->Join();
 }
 
 std::string PullMessageService::getServiceName()
@@ -106,4 +131,3 @@ void PullMessageService::pullMessage(PullRequest* pPullRequest)
 		//TODO
 	}
 }
-

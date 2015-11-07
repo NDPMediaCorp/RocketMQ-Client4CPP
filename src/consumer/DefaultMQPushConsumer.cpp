@@ -24,6 +24,7 @@
 #include "ClientConfig.h"
 #include "ConsumerStatManage.h"
 #include "MixAll.h"
+#include "AllocateMessageQueueStrategyInner.h"
 
 class AllocateMessageQueueStrategy;
 
@@ -32,8 +33,8 @@ DefaultMQPushConsumer::DefaultMQPushConsumer()
 	m_consumerGroup = MixAll::DEFAULT_CONSUMER_GROUP;
 	m_messageModel = CLUSTERING;
 	m_consumeFromWhere = CONSUME_FROM_LAST_OFFSET;
-	m_pAllocateMessageQueueStrategy ;
-	m_pMessageListener;
+	m_pAllocateMessageQueueStrategy = new AllocateMessageQueueAveragely();
+	m_pMessageListener = NULL;
 	m_consumeThreadMin = 10;
 	m_consumeThreadMax = 20;
 	m_consumeConcurrentlyMaxSpan = 2000;
@@ -41,6 +42,8 @@ DefaultMQPushConsumer::DefaultMQPushConsumer()
 	m_pullInterval = 0;
 	m_consumeMessageBatchMaxSize = 1;
 	m_pullBatchSize = 32;
+	m_pOffsetStore = NULL;
+	m_pDefaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this);
 }
 
 DefaultMQPushConsumer::DefaultMQPushConsumer(const std::string& consumerGroup)
@@ -48,8 +51,8 @@ DefaultMQPushConsumer::DefaultMQPushConsumer(const std::string& consumerGroup)
 	m_consumerGroup = consumerGroup;
 	m_messageModel = CLUSTERING;
 	m_consumeFromWhere = CONSUME_FROM_LAST_OFFSET;
-	m_pAllocateMessageQueueStrategy ;
-	m_pMessageListener;
+	m_pAllocateMessageQueueStrategy = new AllocateMessageQueueAveragely();
+	m_pMessageListener = NULL;
 	m_consumeThreadMin = 10;
 	m_consumeThreadMax = 20;
 	m_consumeConcurrentlyMaxSpan = 2000;
@@ -57,6 +60,8 @@ DefaultMQPushConsumer::DefaultMQPushConsumer(const std::string& consumerGroup)
 	m_pullInterval = 0;
 	m_consumeMessageBatchMaxSize = 1;
 	m_pullBatchSize = 32;
+	m_pOffsetStore = NULL;
+	m_pDefaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this);
 }
 
 DefaultMQPushConsumer::~DefaultMQPushConsumer()
