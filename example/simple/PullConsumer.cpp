@@ -15,18 +15,18 @@
 #include <PullResult.h>
 #include <MQClientException.h>
 
-std::map<MessageQueue, long long> offseTable;
+std::map<MessageQueue, long long> offsetTable;
 
 void putMessageQueueOffset(const MessageQueue& mq, long long offset)
 {
-	offseTable[mq]=offset;
+	offsetTable[mq]=offset;
 }
 
 long long getMessageQueueOffset(const MessageQueue& mq) 
 {
-	std::map<MessageQueue, long long>::iterator it = offseTable.find(mq);
+	std::map<MessageQueue, long long>::iterator it = offsetTable.find(mq);
 
-	if (it!=offseTable.end())
+	if (it != offsetTable.end())
 	{
 		return it->second;
 	}
