@@ -188,6 +188,7 @@ set(SOURCE_FILES
         src/ClientRemotingProcessor.cpp
         src/ClientRemotingProcessor.h
         src/CommunicationMode.h
+        src/dllmain.cpp
         src/FindBrokerResult.h
         src/MQAdminImpl.cpp
         src/MQAdminImpl.h
