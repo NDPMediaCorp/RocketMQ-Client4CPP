@@ -81,6 +81,7 @@ set(SOURCE_FILES
         src/consumer/ConsumerInvokeCallback.cpp
         src/consumer/ConsumerInvokeCallback.h
         src/consumer/ConsumerStatManage.h
+        src/consumer/ConsumeType.cpp
         src/consumer/DefaultMQPullConsumer.cpp
         src/consumer/DefaultMQPullConsumerImpl.cpp
         src/consumer/DefaultMQPullConsumerImpl.h
@@ -113,6 +114,7 @@ set(SOURCE_FILES
         src/consumer/SubscriptionData.cpp
         src/consumer/SubscriptionData.h
         src/kpr/AtomicValue.h
+        src/kpr/AtomicValue.cpp
         src/kpr/Condition.cpp
         src/kpr/Condition.h
         src/kpr/Exception.h
