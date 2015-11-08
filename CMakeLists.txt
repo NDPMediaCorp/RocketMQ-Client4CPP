@@ -161,6 +161,7 @@ set(SOURCE_FILES
         src/protocol/CommandCustomHeader.h
         src/protocol/GetConsumerListByGroupResponseBody.h
         src/protocol/HeartbeatData.h
+        src/protocol/HeartbeatData.cpp
         src/protocol/KVTable.h
         src/protocol/LockBatchBody.cpp
         src/protocol/LockBatchBody.h
