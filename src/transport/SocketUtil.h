@@ -44,10 +44,6 @@
 #include <signal.h>
 
 // openssl includes
-
-extern "C" {
-    #include <openssl/applink.c>
-}
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -89,7 +85,7 @@ std::string getLocalAddress();
 unsigned long long h2nll(unsigned long long v);
 unsigned long long n2hll(unsigned long long v);
 
-void initializeSSL();
+SSL* initializeSSL();
 
 void destroySSL();
 

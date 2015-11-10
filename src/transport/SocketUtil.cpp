@@ -325,10 +325,32 @@ std::string socketAddress2IPPort( sockaddr addr )
 	return ipport;
 }
 
-void initializeSSL() {
-	SSL_load_error_strings();
+SSL* initializeSSL() {
 	SSL_library_init();
+	SSL_load_error_strings();
+	ERR_load_BIO_strings();
 	OpenSSL_add_all_algorithms();
+	SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
+	SSL_CTX_use_certificate_file(ctx, "/dianyi/config/RocketMQ/SSL/client.cer", SSL_FILETYPE_PEM);
+	SSL_CTX_use_PrivateKey_file(ctx, "/dianyi/config/RocketMQ/SSL/client.pkey", SSL_FILETYPE_PEM);
+
+	/*
+	 * @param CAfile
+     * A pointer to the name of the file that contains the certificates of the trusted CAs and CRLs.
+     * The file must be in base64 privacy enhanced mail (PEM) format.
+     * The value of this parameter can be NULL if the value of the CApath parameter is not NULL.
+     * The maximum length is 255 characters.
+     *
+     * @param CApath
+     * A pointer to the name of the directory that contains the certificates of the trusted CAs and CRLs.
+     * The files in the directory must be in PEM format.
+     * The value of this parameter can be NULL if the value of the CAfile parameter is not NULL.
+     * The maximum length is 255 characters.
+	 */
+	SSL_CTX_load_verify_locations(ctx, NULL, "/dianyi/config/RocketMQ/SSL/");
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+	SSL_CTX_set_verify_depth(ctx, 1);
+	return SSL_new(ctx);
 }
 
 void destroySSL() {

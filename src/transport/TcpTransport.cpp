@@ -21,6 +21,7 @@
 #include <memory.h>
 #include <errno.h>
 #include <assert.h>
+#include <string>
 
 #include "SocketUtil.h"
 #include "ScopedLock.h"
@@ -43,6 +44,11 @@ TcpTransport::TcpTransport(std::map<std::string, std::string>& config)
 		m_recvBufSize = atoi(it->second.c_str());
 	}
 
+	it = config.find("tcp.transport.enableSSL");
+	if (it != config.end()) {
+		enableSSL = (it->second == "true") || atoi(it->second.c_str()) != 0;
+	}
+
 	it = config.find("tcp.transport.shrinkCheckMax");
 	if (it != config.end())
 	{
@@ -57,6 +63,7 @@ TcpTransport::TcpTransport(std::map<std::string, std::string>& config)
 	m_pRecvBuf = (char*)malloc(m_recvBufSize);
 
 	m_state = (NULL == m_pRecvBuf) ? CLIENT_STATE_UNINIT : CLIENT_STATE_INITED;
+    ssl = nullptr;
 }
 
 TcpTransport::~TcpTransport()
@@ -75,6 +82,9 @@ TcpTransport::~TcpTransport()
 		m_sfd = INVALID_SOCKET;
 	}
 
+    if (enableSSL) {
+        shutdownSSL(ssl);
+    }
 	SocketUninit();
 }
 
@@ -110,6 +120,11 @@ int TcpTransport::Connect(const std::string &strServerURL)
 	sa.sin_port = htons(port);
 
 	sa.sin_addr.s_addr = inet_addr(strAddr.c_str());
+
+    if (enableSSL) {
+        ssl = initializeSSL();
+    }
+
 	m_sfd = (int)socket(AF_INET, SOCK_STREAM, 0);
 
 	if (MakeSocketNonblocking(m_sfd) == -1)
@@ -173,6 +188,15 @@ int TcpTransport::Connect(const std::string &strServerURL)
 		}
 	}
 
+    if (nullptr != ssl) {
+        SSL_set_fd(ssl, m_sfd);
+    }
+
+    // handshake SSL.
+    if (enableSSL && SSL_connect(ssl)) {
+        // debug success of SSL handshake
+    }
+
 	m_serverURL = strServerURL;
 	m_state = CLIENT_STATE_CONNECTED;
 
@@ -194,19 +218,19 @@ void TcpTransport::Close()
 	}
 }
 
-int TcpTransport::SendData(const char* pBuffer, int len,int timeOut)
+int TcpTransport::SendData(const char* pBuffer, size_t len,int timeOut)
 {
 	kpr::ScopedLock<kpr::Mutex> lock(m_sendLock);
 	return SendOneMsg(pBuffer,len,timeOut);
 }
 
-int TcpTransport::SendOneMsg(const char* pBuffer, int len, int nTimeOut)
+int TcpTransport::SendOneMsg(const char* pBuffer, size_t len, int nTimeOut)
 {
 	int pos = 0;
 
 	while (len > 0 && m_state == CLIENT_STATE_CONNECTED)
 	{
-		int ret = send(m_sfd, pBuffer + pos, len, 0);
+		ssize_t ret = send(m_sfd, pBuffer + pos, len, 0);
 		if (ret > 0)
 		{
 			len -= ret;
@@ -220,7 +244,7 @@ int TcpTransport::SendOneMsg(const char* pBuffer, int len, int nTimeOut)
 		else
 		{
 			int err = NET_ERROR;
-			if (err == WSAEWOULDBLOCK||err==EAGAIN)
+			if (err == WSAEWOULDBLOCK)
 			{
 				fd_set wfd;
 				FD_ZERO(&wfd);
@@ -260,9 +284,9 @@ int TcpTransport::SendOneMsg(const char* pBuffer, int len, int nTimeOut)
 	return (len == 0) ? 0 : -1;
 }
 
-int TcpTransport::RecvMsg()
+ssize_t TcpTransport::RecvMsg()
 {
-	int ret = recv(m_sfd, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed, 0);
+	ssize_t ret = recv(m_sfd, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed, 0);
 
 	if (ret > 0)
 	{
@@ -275,7 +299,7 @@ int TcpTransport::RecvMsg()
 	else if (ret == -1)
 	{
 		int err = NET_ERROR;
-		if (err != WSAEWOULDBLOCK && err != EAGAIN)
+		if (err != WSAEWOULDBLOCK)
 		{
 			Close();
 		}
@@ -284,7 +308,7 @@ int TcpTransport::RecvMsg()
 	return ret ;
 }
 
-bool TcpTransport::ResizeBuf(int nNewSize)
+bool TcpTransport::ResizeBuf(uint32_t nNewSize)
 {
 	char * newbuf = (char*)realloc(m_pRecvBuf,nNewSize);
 	if (!newbuf)
@@ -298,7 +322,7 @@ bool TcpTransport::ResizeBuf(int nNewSize)
 	return true;
 }
 
-void TcpTransport::TryShrink(int MsgLen)
+void TcpTransport::TryShrink(uint32_t MsgLen)
 {
 	m_shrinkMax = MsgLen > m_shrinkMax ? MsgLen : m_shrinkMax;
 	if (m_shrinkCheckCnt == 0)
@@ -315,18 +339,18 @@ void TcpTransport::TryShrink(int MsgLen)
 	}
 }
 
-int TcpTransport::GetMsgSize(const char * pBuf)
+uint32_t TcpTransport::GetMsgSize(const char * pBuf)
 {
-	int len = 0;
+	uint32_t len = 0;
 	memcpy(&len, pBuf, sizeof(int));
 
 	//由于长度值不包含自身，所以需要+4
 	return ntohl(len)+4;
 }
 
-int TcpTransport::RecvData(std::list<std::string*>& outDataList)
+ssize_t TcpTransport::RecvData(std::list<std::string*>& outDataList)
 {
-	int ret = RecvMsg();
+	ssize_t ret = RecvMsg();
 	ProcessData(outDataList);
 	return ret;
 }
@@ -335,7 +359,7 @@ void TcpTransport::ProcessData(std::list<std::string*>& outDataList)
 {
 	while (m_recvBufUsed > int(sizeof(int)))
 	{
-		int msgLen = 0;
+		uint32_t msgLen = 0;
 		msgLen = GetMsgSize(m_pRecvBuf);
 		if (msgLen > m_recvBufSize)
 		{

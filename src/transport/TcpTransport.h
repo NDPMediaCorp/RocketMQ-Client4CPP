@@ -43,31 +43,33 @@ public:
 	bool IsConnected();
 	void Close();
 
-	int SendData(const char* pBuffer, int len, int nTimeOut = -1);
-	int RecvData(std::list<std::string*>& outDataList);
+	int SendData(const char* pBuffer, size_t len, int nTimeOut = -1);
+	ssize_t RecvData(std::list<std::string*>& outDataList);
 	void Run();
 	SOCKET GetSocket();
 	std::string& GetServerURL();
 
 private:
-	int SendOneMsg(const char* pBuffer, int len, int nTimeout);
-	int RecvMsg();
+	int SendOneMsg(const char* pBuffer, size_t len, int nTimeout);
+	ssize_t RecvMsg();
 	void ProcessData(std::list<std::string*>& outDataList);
-	bool ResizeBuf(int nNewSize);
-	void TryShrink(int nMsgLen);
-	static int GetMsgSize(const char * pBuf);
+	bool ResizeBuf(uint32_t nNewSize);
+	void TryShrink(uint32_t nMsgLen);
+	static uint32_t GetMsgSize(const char * pBuf);
 
 private:
 	int m_sfd;
 	int m_state;
-	int m_recvBufSize;
-	int m_recvBufUsed;
-	int m_shrinkMax;
+	size_t m_recvBufSize;
+	size_t m_recvBufUsed;
+	uint32_t m_shrinkMax;
 	int m_shrinkCheckCnt;
 	kpr::Mutex m_sendLock;
 	kpr::Mutex m_recvLock;
 	std::string m_serverURL;
 	char * m_pRecvBuf;
+	bool enableSSL;
+    SSL* ssl;
 };
 
 #endif
