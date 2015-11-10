@@ -16,6 +16,7 @@ LINK_LIBRARIES(rocketmq64)
 LINK_LIBRARIES(pthread)
 LINK_LIBRARIES(z)
 LINK_LIBRARIES(jsoncpp64)
+LINK_LIBRARIES(ssl)
 
 include_directories(../../include)
 add_executable(simple ${PRODUCER_FILES})

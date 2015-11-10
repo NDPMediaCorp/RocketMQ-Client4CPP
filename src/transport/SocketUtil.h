@@ -43,6 +43,16 @@
 #include <errno.h>
 #include <signal.h>
 
+// openssl includes
+
+extern "C" {
+    #include <openssl/applink.c>
+}
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+
 #define NET_ERROR errno
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
@@ -78,5 +88,11 @@ std::string getLocalAddress();
 
 unsigned long long h2nll(unsigned long long v);
 unsigned long long n2hll(unsigned long long v);
+
+void initializeSSL();
+
+void destroySSL();
+
+void shutdownSSL(SSL* ssl);
 
 #endif
