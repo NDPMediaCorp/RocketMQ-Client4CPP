@@ -1,4 +1,4 @@
-1 ResponseFuture 
+1 ResponseFuture
 	invokeSyncImpl 创建 --删除
 	invokeAsyncImpl 创建并加入表->ProcessDataWork(线程池工作线程)->ProcessData-》processResponseCommand从表中删除
 		->执行本身的回调函数-》delete this；
