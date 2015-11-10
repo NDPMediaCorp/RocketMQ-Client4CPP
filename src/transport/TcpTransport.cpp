@@ -64,6 +64,7 @@ TcpTransport::TcpTransport(std::map<std::string, std::string>& config)
 
 	m_state = (NULL == m_pRecvBuf) ? CLIENT_STATE_UNINIT : CLIENT_STATE_INITED;
     ssl = nullptr;
+    sslContext = nullptr;
 }
 
 TcpTransport::~TcpTransport()
@@ -84,7 +85,9 @@ TcpTransport::~TcpTransport()
 
     if (enableSSL) {
         shutdownSSL(ssl);
+        SSL_CTX_free(sslContext);
     }
+
 	SocketUninit();
 }
 
@@ -122,12 +125,13 @@ int TcpTransport::Connect(const std::string &strServerURL)
 	sa.sin_addr.s_addr = inet_addr(strAddr.c_str());
 
     if (enableSSL) {
-        ssl = initializeSSL();
+        sslContext = initializeSSL();
+        ssl = SSL_new(sslContext);
     }
 
 	m_sfd = (int)socket(AF_INET, SOCK_STREAM, 0);
 
-	if (MakeSocketNonblocking(m_sfd) == -1)
+	if (!enableSSL && MakeSocketNonblocking(m_sfd) == -1)
 	{
 		return CLIENT_ERROR_CONNECT;
 	}
@@ -188,18 +192,19 @@ int TcpTransport::Connect(const std::string &strServerURL)
 		}
 	}
 
-    if (nullptr != ssl) {
-        SSL_set_fd(ssl, m_sfd);
-    }
-
     // handshake SSL.
-    if (enableSSL && SSL_connect(ssl)) {
-        // debug success of SSL handshake
+    if (enableSSL) {
+        SSL_set_fd(ssl, m_sfd);
+        if (SSL_connect(ssl) == -1) {
+            // Log error of SSL connection.
+            ERR_print_errors_fp(stderr);
+            return CLIENT_ERROR_CONNECT;
+        }
+        // Log success of SSL handshake.
     }
 
 	m_serverURL = strServerURL;
-	m_state = CLIENT_STATE_CONNECTED;
-
+    m_state = CLIENT_STATE_CONNECTED;
 	m_recvBufUsed = 0;
 
 	return CLIENT_ERROR_SUCCESS;
@@ -226,6 +231,12 @@ int TcpTransport::SendData(const char* pBuffer, size_t len,int timeOut)
 
 int TcpTransport::SendOneMsg(const char* pBuffer, size_t len, int nTimeOut)
 {
+
+    if (enableSSL) {
+        SSL_write(ssl, pBuffer, len);
+        return 0;
+    }
+
 	int pos = 0;
 
 	while (len > 0 && m_state == CLIENT_STATE_CONNECTED)
@@ -286,6 +297,12 @@ int TcpTransport::SendOneMsg(const char* pBuffer, size_t len, int nTimeOut)
 
 ssize_t TcpTransport::RecvMsg()
 {
+
+    if (enableSSL) {
+        SSL_read(ssl, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed);
+        return m_recvBufSize - m_recvBufUsed;
+    }
+
 	ssize_t ret = recv(m_sfd, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed, 0);
 
 	if (ret > 0)

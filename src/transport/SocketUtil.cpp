@@ -325,13 +325,13 @@ std::string socketAddress2IPPort( sockaddr addr )
 	return ipport;
 }
 
-SSL* initializeSSL() {
+SSL_CTX* initializeSSL() {
 	SSL_library_init();
 	SSL_load_error_strings();
 	ERR_load_BIO_strings();
 	OpenSSL_add_all_algorithms();
 	SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
-	SSL_CTX_use_certificate_file(ctx, "/dianyi/config/RocketMQ/SSL/client.cer", SSL_FILETYPE_PEM);
+	SSL_CTX_use_certificate_file(ctx, "/dianyi/config/RocketMQ/SSL/client.pem", SSL_FILETYPE_PEM);
 	SSL_CTX_use_PrivateKey_file(ctx, "/dianyi/config/RocketMQ/SSL/client.pkey", SSL_FILETYPE_PEM);
 
 	/*
@@ -348,9 +348,9 @@ SSL* initializeSSL() {
      * The maximum length is 255 characters.
 	 */
 	SSL_CTX_load_verify_locations(ctx, NULL, "/dianyi/config/RocketMQ/SSL/");
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
-	SSL_CTX_set_verify_depth(ctx, 1);
-	return SSL_new(ctx);
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+	SSL_CTX_set_verify_depth(ctx, 5);
+	return ctx;
 }
 
 void destroySSL() {

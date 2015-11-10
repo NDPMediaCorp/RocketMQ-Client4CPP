@@ -69,6 +69,7 @@ private:
 	std::string m_serverURL;
 	char * m_pRecvBuf;
 	bool enableSSL;
+    SSL_CTX* sslContext;
     SSL* ssl;
 };
 

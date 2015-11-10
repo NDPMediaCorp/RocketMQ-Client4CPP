@@ -85,7 +85,7 @@ std::string getLocalAddress();
 unsigned long long h2nll(unsigned long long v);
 unsigned long long n2hll(unsigned long long v);
 
-SSL* initializeSSL();
+SSL_CTX* initializeSSL();
 
 void destroySSL();
 
