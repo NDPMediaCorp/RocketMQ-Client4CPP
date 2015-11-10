@@ -1,1 +1,9 @@
 http://stackoverflow.com/questions/7698488/turn-a-simple-socket-into-an-ssl-socket
+
+keytool -exportcert -rfc -keystore client.ks -alias ndpmediaclient -storepass changeit -keypass changeit -file client_cer.pem
+
+
+# export private key in pem format.
+
+keytool  -importkeystore -srckeystore client.ks -destkeystore tmp.p12 -srcstoretype JKS -deststoretype PKCS12
+openssl  pkcs12 -in tmp.p12 -nodes -out tmp.rsa.pem
