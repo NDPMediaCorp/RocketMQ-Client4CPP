@@ -144,6 +144,7 @@ int TcpTransport::Connect(const std::string &strServerURL)
 
         if (connect(m_sfd, (struct sockaddr*) &sa, sizeof(sockaddr)) == -1) {
             std::cout << "Unencrypted connection establishment failed" << std::endl;
+            return CLIENT_ERROR_CONNECT;
         }
 
 		int return_code = 0;
