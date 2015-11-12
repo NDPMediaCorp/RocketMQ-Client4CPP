@@ -18,7 +18,8 @@ LINK_LIBRARIES(z)
 LINK_LIBRARIES(jsoncpp64)
 LINK_LIBRARIES(ssl)
 
-include_directories(../../include)
+# include_directories(../../include)
+
 add_executable(simple ${PRODUCER_FILES})
 
 add_executable(push_consumer ${PUSH_CONSUMER_FILES})
