@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <string>
+#include <iostream>
 
 #include "SocketUtil.h"
 #include "ScopedLock.h"
@@ -131,18 +132,38 @@ int TcpTransport::Connect(const std::string &strServerURL)
 
 	m_sfd = (int)socket(AF_INET, SOCK_STREAM, 0);
 
-	if (!enableSSL && MakeSocketNonblocking(m_sfd) == -1)
-	{
-		return CLIENT_ERROR_CONNECT;
-	}
-
 	if (SetTcpNoDelay(m_sfd) == -1)
 	{
 		closesocket(m_sfd);
 		return CLIENT_ERROR_CONNECT;
 	}
+
+	// handshake SSL.
+	if (enableSSL) {
+		SSL_set_fd(ssl, m_sfd);
+
+        if (connect(m_sfd, (struct sockaddr*) &sa, sizeof(sockaddr)) == -1) {
+            std::cout << "Unencrypted connection establishment failed" << std::endl;
+        }
+
+		int return_code = 0;
+		if ((return_code = SSL_connect(ssl)) <= 0) {
+			// Log error of SSL connection.
+			ERR_print_errors_fp(stderr);
+			std::cout << "Connect Error Code: " << SSL_get_error(ssl, return_code) << std::endl;
+			return CLIENT_ERROR_CONNECT;
+		} else {
+			show_certificate(ssl);
+		}
+		// Log success of SSL handshake.
+	}
+
+	if (MakeSocketNonblocking(m_sfd) == -1)
+	{
+		return CLIENT_ERROR_CONNECT;
+	}
 	
-	if (connect(m_sfd,(struct sockaddr*)&sa, sizeof(sockaddr)) == -1)
+	if (!enableSSL && connect(m_sfd,(struct sockaddr*)&sa, sizeof(sockaddr)) == -1)
 	{
 		int err = NET_ERROR;
 		if (err == WSAEWOULDBLOCK || err == WSAEINPROGRESS)
@@ -192,17 +213,6 @@ int TcpTransport::Connect(const std::string &strServerURL)
 		}
 	}
 
-    // handshake SSL.
-    if (enableSSL) {
-        SSL_set_fd(ssl, m_sfd);
-        if (SSL_connect(ssl) == -1) {
-            // Log error of SSL connection.
-            ERR_print_errors_fp(stderr);
-            return CLIENT_ERROR_CONNECT;
-        }
-        // Log success of SSL handshake.
-    }
-
 	m_serverURL = strServerURL;
     m_state = CLIENT_STATE_CONNECTED;
 	m_recvBufUsed = 0;
@@ -231,17 +241,16 @@ int TcpTransport::SendData(const char* pBuffer, size_t len,int timeOut)
 
 int TcpTransport::SendOneMsg(const char* pBuffer, size_t len, int nTimeOut)
 {
-
-    if (enableSSL) {
-        SSL_write(ssl, pBuffer, len);
-        return 0;
-    }
-
 	int pos = 0;
-
 	while (len > 0 && m_state == CLIENT_STATE_CONNECTED)
 	{
-		ssize_t ret = send(m_sfd, pBuffer + pos, len, 0);
+		ssize_t ret = 0;
+		if (enableSSL) {
+			ret = SSL_write(ssl, pBuffer + pos, len);
+		} else {
+			ret = send(m_sfd, pBuffer + pos, len, 0);
+		}
+
 		if (ret > 0)
 		{
 			len -= ret;
@@ -297,13 +306,12 @@ int TcpTransport::SendOneMsg(const char* pBuffer, size_t len, int nTimeOut)
 
 ssize_t TcpTransport::RecvMsg()
 {
-
-    if (enableSSL) {
-        SSL_read(ssl, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed);
-        return m_recvBufSize - m_recvBufUsed;
-    }
-
-	ssize_t ret = recv(m_sfd, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed, 0);
+	ssize_t ret = 0;
+	if (enableSSL) {
+		ret = SSL_read(ssl, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed);
+	} else {
+		ret = recv(m_sfd, m_pRecvBuf + m_recvBufUsed, m_recvBufSize - m_recvBufUsed, 0);
+	}
 
 	if (ret > 0)
 	{

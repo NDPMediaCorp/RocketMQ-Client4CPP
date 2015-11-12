@@ -85,9 +85,13 @@ std::string getLocalAddress();
 unsigned long long h2nll(unsigned long long v);
 unsigned long long n2hll(unsigned long long v);
 
+void load_certificate(SSL_CTX* ctx, char* ca_cert, char* ca_key, char* trust_ca_location);
+
 SSL_CTX* initializeSSL();
 
 void destroySSL();
+
+void show_certificate(SSL* ssl);
 
 void shutdownSSL(SSL* ssl);
 

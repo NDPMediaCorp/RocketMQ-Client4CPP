@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sstream>
 #include <vector>
+#include <iostream>
 
 int SocketInit()
 {
@@ -325,17 +326,24 @@ std::string socketAddress2IPPort( sockaddr addr )
 	return ipport;
 }
 
-SSL_CTX* initializeSSL() {
-	SSL_library_init();
-	SSL_load_error_strings();
-	ERR_load_BIO_strings();
-	OpenSSL_add_all_algorithms();
-	SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
-	SSL_CTX_use_certificate_file(ctx, "/dianyi/config/RocketMQ/SSL/client.pem", SSL_FILETYPE_PEM);
-	SSL_CTX_use_PrivateKey_file(ctx, "/dianyi/config/RocketMQ/SSL/client.pkey", SSL_FILETYPE_PEM);
+void load_certificate(SSL_CTX* ctx, char* cacert, char* cakey, char* trustCALocation) {
+    if (SSL_CTX_use_certificate_file(ctx, cacert, SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
 
-	/*
-	 * @param CAfile
+    if(SSL_CTX_use_PrivateKey_file(ctx, cakey, SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+
+    if (SSL_CTX_check_private_key(ctx) <= 0) {
+        fprintf(stderr, "Private key does not match the public certificate\n");
+        abort();
+    }
+
+    /*
+     * @param CAfile
      * A pointer to the name of the file that contains the certificates of the trusted CAs and CRLs.
      * The file must be in base64 privacy enhanced mail (PEM) format.
      * The value of this parameter can be NULL if the value of the CApath parameter is not NULL.
@@ -346,16 +354,50 @@ SSL_CTX* initializeSSL() {
      * The files in the directory must be in PEM format.
      * The value of this parameter can be NULL if the value of the CAfile parameter is not NULL.
      * The maximum length is 255 characters.
-	 */
-	SSL_CTX_load_verify_locations(ctx, NULL, "/dianyi/config/RocketMQ/SSL/");
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-	SSL_CTX_set_verify_depth(ctx, 5);
+     */
+    SSL_CTX_load_verify_locations(ctx, NULL, trustCALocation);
+    SSL_CTX_set_verify_depth(ctx, 5);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+
+    std::cout << "Load Certificate Successfully" << std::endl;
+}
+
+SSL_CTX* initializeSSL() {
+	SSL_library_init();
+	SSL_load_error_strings();
+	ERR_load_BIO_strings();
+	OpenSSL_add_all_algorithms(); // load and register all encryption algorithms.
+	SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
+    load_certificate(ctx, //SSL_CTX*
+                     "/dianyi/config/RocketMQ/SSL/client.pem", // public CA certificate
+                     "/dianyi/config/RocketMQ/SSL/client.pkey", // private CA  key
+                     "/dianyi/config/RocketMQ/SSL/" // trust CA certificates
+    );
+
 	return ctx;
 }
 
 void destroySSL() {
 	ERR_free_strings();
 	EVP_cleanup();
+}
+
+void show_certificate(SSL* ssl) {
+    X509 *cert;
+    char *line;
+    cert = SSL_get_peer_certificate(ssl); /* Get certificates (if available) */
+    if ( cert != NULL ) {
+        printf("Server certificates:\n");
+        line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
+        printf("Subject: %s\n", line);
+        free(line);
+        line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
+        printf("Issuer: %s\n", line);
+        free(line);
+        X509_free(cert);
+    } else {
+        printf("No certificates.\n");
+    }
 }
 
 void shutdownSSL(SSL * ssl) {
