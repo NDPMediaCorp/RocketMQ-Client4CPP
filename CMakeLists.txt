@@ -203,5 +203,6 @@ add_library(rocketmq64 SHARED ${SOURCE_FILES})
 target_link_libraries(rocketmq64 jsoncpp)
 
 LINK_LIBRARIES(ssl)
+LINK_LIBRARIES(curl)
 
 add_subdirectory(example/simple)

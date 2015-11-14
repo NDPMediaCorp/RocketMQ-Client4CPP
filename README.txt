@@ -1,5 +1,9 @@
 How to build using CMake
 
+0. Dependent Libraries
+   openssl
+   curl
+
 1. Create directory "build" along with this file.
    mkdir build
 

@@ -17,6 +17,15 @@
 #define  __TOPADDRESSING_H__
 
 #include <string>
+#include <curl/curl.h>
+#include "MixAll.h"
+
+class fetch_ns_exception : public std::exception {
+public:
+    virtual const char* what() const throw() {
+        return "Connection time";
+    }
+};
 
 /**
  * Ñ°Ö··þÎñ
@@ -27,94 +36,44 @@ class TopAddressing
 public:
 	TopAddressing()
 	{
-		//  HttpConnectionManagerParams managerParams = httpClient.getHttpConnectionManager().getParams();
-		//  managerParams.setConnectionTimeout(5000);
-		//  managerParams.setSoTimeout(5000);
 	}
 
-	std::string fetchNSAddr()
-	{
-
-		return "";
+	size_t curl_callback(char* data, size_t size, size_t nmemb, std::string *buffer) {
+		if (buffer != nullptr) {
+			buffer->append(data, size * nmemb);
+			return size * nmemb;
+		}
+		return 0;
 	}
 
-	//private static String clearNewLine(final String str) {
-	//    String newString = str.trim();
-	//    int index = newString.indexOf("\r");
-	//    if (index != -1) {
-	//        return newString.substring(0, index);
-	//    }
+    std::string fetchNSAddr()
+    {
+        std::string ns_domain = MixAll::ROCKETMQ_NAMESRV_DOMAIN;
+        return fetchNameServer(ns_domain, 3000);
+    }
 
-	//    index = newString.indexOf("\n");
-	//    if (index != -1) {
-	//        return newString.substring(0, index);
-	//    }
+	std::string fetchNameServer(std::string& domain, int timeout) throw (fetch_ns_exception)  {
+		CURL *curl;
+		CURLcode res;
+		std::string result = "";
+		curl = curl_easy_init();
+		curl_easy_setopt(curl, CURLOPT_URL, domain.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, timeout);
+		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, timeout);
 
-	//    return newString;
-	//}
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
 
-
-	//public final String fetchNSAddr() {
-	//    HttpMethod httpMethod = null;
-
-	//    try {
-	//        httpMethod = new GetMethod(MixAll.WS_ADDR);
-	//        int httpStatus = this.httpClient.executeMethod(httpMethod);
-	//        if (200 == httpStatus) {
-	//            byte[] responseBody = httpMethod.getResponseBody();
-	//            if (responseBody != null) {
-	//                String responseStr = new String(responseBody);
-	//                return clearNewLine(responseStr);
-	//            }
-	//            else {
-	//                log.error("httpMethod.getResponseBody() return null");
-	//            }
-	//        }
-	//        else {
-	//            log.error("HttpClient.executeMethod return not OK, " + httpStatus);
-	//        }
-	//    }
-	//    catch (HttpException e) {
-	//        log.error("fetchZKAddr exception", e);
-	//    }
-	//    catch (IOException e) {
-	//        log.error("fetchZKAddr exception", e);
-	//    }
-	//    finally {
-	//        if (httpMethod != null) {
-	//            httpMethod.releaseConnection();
-	//        }
-	//    }
-
-	//    String errorMsg =
-	//            "connect to " + MixAll.WS_ADDR + " failed, maybe the domain name " + MixAll.WS_DOMAIN_NAME
-	//                    + " not bind in /etc/hosts";
-	//    errorMsg += FAQUrl.suggestTodo(FAQUrl.NAME_SERVER_ADDR_NOT_EXIST_URL);
-
-	//    log.warn(errorMsg);
-	//    System.out.println(errorMsg);
-	//    return null;
-	//}
-
-
-	//protected void doOnNSAddrChanged(final String newNSAddr) {
-	//}
-
-
-	//public void tryToAddressing() {
-	//    try {
-	//        String newNSAddr = this.fetchNSAddr();
-	//        if (newNSAddr != null) {
-	//            if (null == this.nsAddr || !newNSAddr.equals(this.nsAddr)) {
-	//                log.info("nsaddr in top web server changed, " + newNSAddr);
-	//                this.doOnNSAddrChanged(newNSAddr);
-	//            }
-	//        }
-	//    }
-	//    catch (Exception e) {
-	//        log.error("", e);
-	//    }
-	//}
+		if (res != CURLE_OK) {
+			const char* errMsg = curl_easy_strerror(res);
+			std::cerr << errMsg << std::endl;
+			fetch_ns_exception e;
+			throw e;
+		}
+		return result;
+	}
 
 
 	const std::string& getNsAddr()
@@ -129,8 +88,6 @@ public:
 	}
 
 private:
-	//static final Logger log = LoggerFactory.getLogger(LoggerName.CommonLoggerName);
-	//private HttpClient httpClient = new HttpClient();
 	std::string m_nsAddr;
 };
 
