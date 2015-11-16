@@ -38,7 +38,7 @@ public:
 	{
 	}
 
-	size_t curl_callback(char* data, size_t size, size_t nmemb, std::string *buffer) {
+	static size_t curl_callback(char* data, size_t size, size_t nmemb, std::string *buffer) {
 		if (buffer != nullptr) {
 			buffer->append(data, size * nmemb);
 			return size * nmemb;
