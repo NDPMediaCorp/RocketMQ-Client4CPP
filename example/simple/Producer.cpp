@@ -88,7 +88,10 @@ int main(int argc, char* argv[])
 	}
 
 	DefaultMQProducer producer("please_rename_unique_group_name");
-	producer.setNamesrvAddr(argv[1]);
+
+	// Comment out to use name server auto-discovery.
+	// producer.setNamesrvAddr(argv[1]);
+
 	producer.start();
 
 	std::string tags[] = { "TagA", "TagB", "TagC", "TagD", "TagE" };

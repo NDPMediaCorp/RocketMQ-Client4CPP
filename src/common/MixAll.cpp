@@ -31,7 +31,7 @@ const std::string MixAll::NAMESRV_ADDR_ENV = "NAMESRV_ADDR";
 const std::string MixAll::ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
 const std::string MixAll::ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir";
 const std::string MixAll::MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
-const std::string MixAll::ROCKETMQ_NAMESRV_DOMAIN ="config.graphene.spellso.com";
+const std::string MixAll::ROCKETMQ_NAMESRV_DOMAIN ="172.30.30.125"; //config.graphene.spellso.com
 
 std::string MixAll::getRetryTopic(const std::string& consumerGroup)
 {

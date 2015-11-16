@@ -49,7 +49,8 @@ public:
     std::string fetchNSAddr()
     {
         std::string ns_domain = MixAll::ROCKETMQ_NAMESRV_DOMAIN;
-        return fetchNameServer(ns_domain, 3000);
+        std::string name_server_discovery_end_point = ns_domain.append("/rocketmq/nsaddr");
+        return fetchNameServer(name_server_discovery_end_point, 3000);
     }
 
 	std::string fetchNameServer(std::string& domain, int timeout) throw (fetch_ns_exception)  {
@@ -72,6 +73,9 @@ public:
 			fetch_ns_exception e;
 			throw e;
 		}
+
+        std::cout << result << std::endl;
+
 		return result;
 	}
 
