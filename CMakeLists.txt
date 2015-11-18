@@ -207,7 +207,7 @@ LINK_LIBRARIES(curl)
 
 install(TARGETS rocketmq
         LIBRARY DESTINATION /usr/lib)
-install(DIRECTORY include
+install(DIRECTORY include/
         DESTINATION /usr/include/rocketmq)
 
 add_subdirectory(example/simple)
