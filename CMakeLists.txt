@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(rocketmq64)
+project(rocketmq)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++11")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 add_subdirectory(libs/jsoncpp-src-0.5.0)
@@ -199,10 +199,15 @@ set(SOURCE_FILES
         src/MQClientManager.cpp
         src/MQClientManager.h)
 
-add_library(rocketmq64 SHARED ${SOURCE_FILES})
-target_link_libraries(rocketmq64 jsoncpp)
+add_library(rocketmq SHARED ${SOURCE_FILES})
+target_link_libraries(rocketmq jsoncpp)
 
 LINK_LIBRARIES(ssl)
 LINK_LIBRARIES(curl)
+
+install(TARGETS rocketmq
+        LIBRARY DESTINATION /usr/lib)
+install(DIRECTORY include
+        DESTINATION /usr/include/rocketmq)
 
 add_subdirectory(example/simple)

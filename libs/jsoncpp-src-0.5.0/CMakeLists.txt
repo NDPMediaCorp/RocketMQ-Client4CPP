@@ -23,4 +23,9 @@ add_library(jsoncpp SHARED ${SOURCE_FILES})
 include_directories(include)
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-set_target_properties(jsoncpp PROPERTIES OUTPUT_NAME jsoncpp64)
+# set_target_properties(jsoncpp PROPERTIES OUTPUT_NAME jsoncpp64)
+
+install(TARGETS jsoncpp
+        LIBRARY DESTINATION /usr/lib)
+install(DIRECTORY include/json
+        DESTINATION /usr/include)
