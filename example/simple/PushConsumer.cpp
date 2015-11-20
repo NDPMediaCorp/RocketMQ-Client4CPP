@@ -84,14 +84,18 @@ public:
 
 int main(int argc, char* argv[])
 {
-	if (argc<2)
-	{
-		printf("Usage:%s ip:port\n",argv[0]);
-		return 0;
+	bool auto_fetch_ns = true;
+
+	if (argc >= 2) {
+		auto_fetch_ns = false;
 	}
 
-	DefaultMQPushConsumer consumer("please_rename_unique_group_name");
-	consumer.setNamesrvAddr(argv[1]);
+	DefaultMQPushConsumer consumer("CG_CppClient");
+	if (!auto_fetch_ns) {
+        printf("Usage:%s [ip:port]\n",argv[0]);
+        std::cout << "Now we are using specified ip:port name server address" << std::endl;
+		consumer.setNamesrvAddr(argv[1]);
+	}
 
 	/**
 	* 订阅指定topic下所有消息
