@@ -17,7 +17,11 @@
 #define  __TOPADDRESSING_H__
 
 #include <string>
+
+extern "C" {
 #include <curl/curl.h>
+}
+
 #include "MixAll.h"
 
 class fetch_ns_exception : public std::exception {
