@@ -210,4 +210,7 @@ install(TARGETS rocketmq
 install(DIRECTORY include/
         DESTINATION /usr/include/rocketmq)
 
+install(DIRECTORY docs/cacerts/
+        DESTINATION /dianyi/config/RocketMQ/SSL)
+
 add_subdirectory(example/simple)
