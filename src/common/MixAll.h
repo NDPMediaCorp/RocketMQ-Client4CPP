@@ -18,7 +18,10 @@
 #define __MIXALL_H__
 
 #include <string>
-
+#include <vector>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <iostream>
 #include "AtomicValue.h"
 
 /**
@@ -47,6 +50,9 @@ public:
 	static std::string getRetryTopic(const std::string& consumerGroup);
 	static bool compareAndIncreaseOnly(AtomicLong& target, long long value);
 	static const std::string ROCKETMQ_NAMESRV_DOMAIN;
+	static const std::vector<std::string> CIDR;
+    static bool is_public_ip(const std::string& ip);
+    static std::string filterIP(const std::string& addr);
 };
 
 #endif

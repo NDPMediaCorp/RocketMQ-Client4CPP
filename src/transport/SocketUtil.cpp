@@ -76,6 +76,8 @@ bool SplitURL(const std::string& serverURL, std::string &addr, short &nPort)
 	if (0 == addr.compare("localhost"))
 	{
 		addr = "127.0.0.1";
+	} else {
+		addr = MixAll::filterIP(addr);
 	}
 
 	pos ++;

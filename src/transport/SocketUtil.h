@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include "MixAll.h"
 
 // openssl includes
 #include <openssl/bio.h>
