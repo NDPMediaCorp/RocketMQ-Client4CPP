@@ -55,14 +55,13 @@ void PrintResult(PullResult& result)
 
 int main(int argc, char* argv[])
 {
-	if (argc<2)
-	{
+	DefaultMQPullConsumer consumer("CG_Cpp_QuickStart_Pull");
+	if (argc >=2 ) {
 		printf("Usage:%s ip:port\n",argv[0]);
-		return 0;
+		consumer.setNamesrvAddr(argv[1]);
+	} else {
+		printf("Using server name auto config service.");
 	}
-
-	DefaultMQPullConsumer consumer("please_rename_unique_group_name");
-	consumer.setNamesrvAddr(argv[1]);
 	consumer.start();
 
 	std::set<MessageQueue>* mqs = consumer.fetchSubscribeMessageQueues("TopicTest");
