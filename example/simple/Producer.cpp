@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
                         value,// body
                         strlen(value) + 1);
             SendResult sendResult = producer.send(msg);
-            MySleep(100);
+            // MySleep(100);
             printf("sendresult=%d,msgid=%s\n", sendResult.getSendStatus(), sendResult.getMsgId().c_str());
         }
         catch (MQClientException &e) {

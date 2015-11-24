@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 		auto_fetch_ns = false;
 	}
 
-	DefaultMQPushConsumer consumer("CG_CppClient");
+	DefaultMQPushConsumer consumer("CG_Cpp_Push");
 	if (!auto_fetch_ns) {
         printf("Usage:%s [ip:port]\n",argv[0]);
         std::cout << "Now we are using specified ip:port name server address" << std::endl;

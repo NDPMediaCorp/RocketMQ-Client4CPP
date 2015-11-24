@@ -55,7 +55,7 @@ void PrintResult(PullResult& result)
 
 int main(int argc, char* argv[])
 {
-	DefaultMQPullConsumer consumer("CG_Cpp_QuickStart_Pull");
+	DefaultMQPullConsumer consumer("CG_Cpp_Pull");
 	if (argc >=2 ) {
 		printf("Usage:%s ip:port\n",argv[0]);
 		consumer.setNamesrvAddr(argv[1]);
