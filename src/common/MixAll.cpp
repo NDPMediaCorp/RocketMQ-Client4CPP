@@ -36,7 +36,9 @@ const std::vector<std::string> MixAll::CIDR = {"10.0.0.0/8", "172.16.0.0/12", "1
 
 std::string MixAll::getRetryTopic(const std::string& consumerGroup)
 {
-	return RETRY_GROUP_TOPIC_PREFIX + consumerGroup;
+	std::string result;
+	result.append(RETRY_GROUP_TOPIC_PREFIX).append(consumerGroup);
+	return result;
 }
 
 bool MixAll::compareAndIncreaseOnly(AtomicLong& target, long long value)

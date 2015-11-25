@@ -386,7 +386,16 @@ CommandCustomHeader* QueryConsumerOffsetResponseHeader::Decode(char* pData,int l
 		Json::Value offsetValue = ext["offset"];
 		if (!offsetValue.isNull()) {
 			offset = str2ll(offsetValue.asCString());
+		} else {
+			std::cout << "extFields does not have offset info" << std::endl;
 		}
+	} else {
+		std::cout << "extFields is missing" << std::endl;
+		Json::Value remarkValue = object["remark"];
+		if (!remarkValue.isNull()) {
+			std::cout << "Remark: " << remarkValue.asString() << std::endl;
+		}
+		std::cout << "Return -1 as consumer offset." << std::endl;
 	}
 
 	QueryConsumerOffsetResponseHeader* res= new QueryConsumerOffsetResponseHeader();

@@ -160,6 +160,10 @@ namespace kpr
 		pthread_attr_destroy(&attr);
 #endif
 		m_started = true;
+
+		std::string service_name(GetName());
+		std::cout << service_name << std::endl;
+		Logger::get_logger()->info("{} start successfully", service_name);
 	}
 
 	void Thread::Run()

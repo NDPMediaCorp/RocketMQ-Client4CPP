@@ -20,6 +20,7 @@
 #include "RefCount.h"
 #include "RefHandle.h"
 #include "Mutex.h"
+#include "Logger.h"
 
 #ifdef Yield
 #undef Yield

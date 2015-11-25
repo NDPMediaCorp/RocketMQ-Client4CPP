@@ -28,6 +28,7 @@
 #include "PullResult.h"
 #include "ConsumeMessageHook.h"
 #include "MixAll.h"
+#include "Logger.h"
 
 class DefaultMQPushConsumer;
 class ConsumeMessageHook;

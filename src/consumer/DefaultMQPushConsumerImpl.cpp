@@ -489,6 +489,7 @@ void DefaultMQPushConsumerImpl::shutdown()
 
 void DefaultMQPushConsumerImpl::start()
 {
+	Logger::get_logger()->info("DefaultMQPushConsumerImpl::start()");
 	switch (m_serviceState)
 	{
 	case CREATE_JUST:

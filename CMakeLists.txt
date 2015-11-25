@@ -3,6 +3,7 @@ project(rocketmq)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++11")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 add_subdirectory(libs/jsoncpp-src-0.5.0)
+add_subdirectory(libs/spdlog)
 
 include_directories(libs/jsoncpp/include)
 include_directories(libs/zlib/include)
@@ -197,13 +198,16 @@ set(SOURCE_FILES
         src/MQClientFactory.cpp
         src/MQClientFactory.h
         src/MQClientManager.cpp
-        src/MQClientManager.h)
+        src/MQClientManager.h
+        src/Logger.cpp
+        src/Logger.h)
 
 add_library(rocketmq SHARED ${SOURCE_FILES})
 target_link_libraries(rocketmq jsoncpp)
 
 LINK_LIBRARIES(ssl)
 LINK_LIBRARIES(curl)
+LINK_LIBRARIES(spdlog)
 
 install(TARGETS rocketmq
         LIBRARY DESTINATION /usr/lib)
