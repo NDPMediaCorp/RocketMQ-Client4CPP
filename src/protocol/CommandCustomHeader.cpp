@@ -379,8 +379,15 @@ CommandCustomHeader* QueryConsumerOffsetResponseHeader::Decode(char* pData,int l
 		return NULL;
 	}
 
+	long long offset = -1;
+
 	Json::Value ext = object["extFields"];
-	long long offset = str2ll(ext["offset"].asCString());
+	if (ext.begin() != ext.end()) {
+		Json::Value offsetValue = ext["offset"];
+		if (!offsetValue.isNull()) {
+			offset = str2ll(offsetValue.asCString());
+		}
+	}
 
 	QueryConsumerOffsetResponseHeader* res= new QueryConsumerOffsetResponseHeader();
 	res->offset = offset;

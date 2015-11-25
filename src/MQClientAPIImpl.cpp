@@ -398,6 +398,10 @@ long long MQClientAPIImpl::queryConsumerOffset(const std::string& addr,
 
 	RemotingCommand* response = m_pRemotingClient->invokeSync(addr, request, timeoutMillis);
 
+	if (response == nullptr) {
+		return -1;
+	}
+
 	switch (response->getCode())
 	{
 	case SUCCESS_VALUE:
