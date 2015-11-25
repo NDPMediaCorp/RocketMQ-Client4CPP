@@ -42,6 +42,7 @@ namespace kpr
 
 		void SetName(const char*);
 		const char* GetName() const;
+		const char* GetNameWithLockHeld() const;
 
 		void Startup();
 		void Cleanup();

@@ -120,6 +120,10 @@ namespace kpr
 		return m_name;
 	}
 
+	const char* Thread::GetNameWithLockHeld() const {
+		return m_name;
+	}
+
 	void Thread::Start()
 	{
 		ScopedLock<Mutex> guard(m_mutex);
@@ -161,8 +165,7 @@ namespace kpr
 #endif
 		m_started = true;
 
-		std::string service_name(GetName());
-		std::cout << service_name << std::endl;
+		std::string service_name(GetNameWithLockHeld());
 		Logger::get_logger()->info("{} start successfully", service_name);
 	}
 
