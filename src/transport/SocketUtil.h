@@ -43,6 +43,8 @@
 #include <errno.h>
 #include <signal.h>
 #include "MixAll.h"
+#include <string>
+#include "Logger.h"
 
 // openssl includes
 #include <openssl/bio.h>
@@ -66,8 +68,6 @@ typedef int SOCKET;
 #define SocketUninit()
 
 #endif
-
-#include <string>
 
 int SocketInit();
 int MakeSocketNonblocking (SOCKET fd);

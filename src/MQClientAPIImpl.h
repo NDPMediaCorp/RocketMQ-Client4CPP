@@ -36,6 +36,7 @@
 #include "TopAddressing.h"
 #include "HeartbeatData.h"
 #include "LockBatchBody.h"
+#include  "Logger.h"
 
 class TcpRemotingClient;
 class QueryConsumerOffsetRequestHeader;

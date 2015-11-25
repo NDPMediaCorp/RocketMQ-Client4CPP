@@ -559,7 +559,7 @@ void DefaultMQPushConsumerImpl::start()
 				std::string str("The consumer group[");
 				str.append(m_pDefaultMQPushConsumer->getConsumerGroup());
 				str.append("] has been created before, specify another name please.");
-
+				Logger::get_logger()->error(str.c_str());
 				THROW_MQEXCEPTION(MQClientException,str,-1);
 			}
 

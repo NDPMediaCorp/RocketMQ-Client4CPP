@@ -360,8 +360,7 @@ void load_certificate(SSL_CTX* ctx, char* cacert, char* cakey, char* trustCALoca
     SSL_CTX_load_verify_locations(ctx, NULL, trustCALocation);
     SSL_CTX_set_verify_depth(ctx, 5);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-
-    std::cout << "Load Certificate Successfully" << std::endl;
+	Logger::get_logger()->info("Load Certificate Successfully");
 }
 
 SSL_CTX* initializeSSL() {
@@ -389,16 +388,16 @@ void show_certificate(SSL* ssl) {
     char *line;
     cert = SSL_get_peer_certificate(ssl); /* Get certificates (if available) */
     if ( cert != NULL ) {
-        printf("Server certificates:\n");
-        line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
-        printf("Subject: %s\n", line);
-        free(line);
+		Logger::get_logger()->info("Server certificates:");
+		line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
+		Logger::get_logger()->info("Subject: {}", line);
+		free(line);
         line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
-        printf("Issuer: %s\n", line);
+		Logger::get_logger()->info("Issuer: {}", line);
         free(line);
         X509_free(cert);
     } else {
-        printf("No certificates.\n");
+		Logger::get_logger()->warn("No certificates.");
     }
 }
 

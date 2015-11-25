@@ -77,6 +77,7 @@ std::string MQClientAPIImpl::fetchNameServerAddr()
 			{
 				updateNameServerAddressList(addrs);
 				m_nameSrvAddr = addrs;
+				Logger::get_logger()->info("Name Server changed: {} -> {}", m_nameSrvAddr, addrs);
 				return m_nameSrvAddr;
 			}
 		}

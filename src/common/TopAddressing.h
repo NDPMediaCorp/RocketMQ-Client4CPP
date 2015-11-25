@@ -23,6 +23,7 @@ extern "C" {
 }
 
 #include "MixAll.h"
+#include "Logger.h"
 
 class fetch_ns_exception : public std::exception {
 public:
@@ -73,13 +74,10 @@ public:
 
 		if (res != CURLE_OK) {
 			const char* errMsg = curl_easy_strerror(res);
-			std::cerr << errMsg << std::endl;
+			Logger::get_logger()->error(errMsg);
 			fetch_ns_exception e;
 			throw e;
 		}
-
-        std::cout << result << std::endl;
-
 		return result;
 	}
 
