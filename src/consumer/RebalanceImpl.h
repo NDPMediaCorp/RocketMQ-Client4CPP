@@ -26,6 +26,7 @@
 #include "ProcessQueue.h"
 #include "PullRequest.h"
 #include "SubscriptionData.h"
+#include "Logger.h"
 
 class AllocateMessageQueueStrategy;
 class MQClientFactory;

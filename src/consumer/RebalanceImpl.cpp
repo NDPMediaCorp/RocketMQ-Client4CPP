@@ -380,7 +380,7 @@ void RebalanceImpl::rebalanceByTopic(const std::string& topic)
 			{
 				if (topic.find(MixAll::RETRY_GROUP_TOPIC_PREFIX) !=0 )
 				{
-					//TODO log.warn("doRebalance, {}, but the topic[{}] not exist.", consumerGroup, topic);
+					Logger::get_logger()->warn("doRebalance, {}, but the topic[{}] not exist.", m_consumerGroup, topic);
 				}
 			}
 
@@ -388,7 +388,7 @@ void RebalanceImpl::rebalanceByTopic(const std::string& topic)
 
 			if (cidAll.empty())
 			{
-				//TODO log.warn("doRebalance, {} {}, get consumer id list failed", consumerGroup, topic);
+				Logger::get_logger()->warn("doRebalance, {} {}, get consumer id list failed", m_consumerGroup, topic);
 			}
 
 			if (it != m_topicSubscribeInfoTable.end() && !cidAll.empty())
