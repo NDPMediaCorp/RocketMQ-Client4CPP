@@ -328,19 +328,19 @@ std::string socketAddress2IPPort( sockaddr addr )
 	return ipport;
 }
 
-void load_certificate(SSL_CTX* ctx, char* cacert, char* cakey, char* trustCALocation) {
+void load_certificate(SSL_CTX* ctx, char const * cacert, char const * cakey, char const * trustCALocation) {
     if (SSL_CTX_use_certificate_file(ctx, cacert, SSL_FILETYPE_PEM) <= 0) {
-        ERR_print_errors_fp(stderr);
+		Logger::get_logger()->error("Failed to apply public certeificate");
         abort();
     }
 
     if(SSL_CTX_use_PrivateKey_file(ctx, cakey, SSL_FILETYPE_PEM) <= 0) {
-        ERR_print_errors_fp(stderr);
+		Logger::get_logger()->error("Failed to apply private key.");
         abort();
     }
 
     if (SSL_CTX_check_private_key(ctx) <= 0) {
-        fprintf(stderr, "Private key does not match the public certificate\n");
+		Logger::get_logger()->error("Private key does not match the public certificate.");
         abort();
     }
 
@@ -369,10 +369,15 @@ SSL_CTX* initializeSSL() {
 	ERR_load_BIO_strings();
 	OpenSSL_add_all_algorithms(); // load and register all encryption algorithms.
 	SSL_CTX* ctx = SSL_CTX_new(SSLv23_method());
+	char const * client_certificate = "/dianyi/config/RocketMQ/SSL/client.pem";
+	char const * client_private_key = "/dianyi/config/RocketMQ/SSL/client.pkey";
+	char const * cacerts = "/dianyi/config/RocketMQ/SSL/";
+
     load_certificate(ctx, //SSL_CTX*
-                     "/dianyi/config/RocketMQ/SSL/client.pem", // public CA certificate
-                     "/dianyi/config/RocketMQ/SSL/client.pkey", // private CA  key
-                     "/dianyi/config/RocketMQ/SSL/" // trust CA certificates
+					 client_certificate, // public CA certificate
+                     client_private_key, // private CA  key
+                     cacerts // trust CA certificates
+
     );
 
 	return ctx;
