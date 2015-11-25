@@ -18,6 +18,14 @@
 #define __REBALANCEPUSHIMPL_H__
 
 #include "RebalanceImpl.h"
+#include <string.h>
+#include <climits>
+#include "DefaultMQPushConsumerImpl.h"
+#include "AllocateMessageQueueStrategy.h"
+#include "MQClientFactory.h"
+#include "MessageQueueListener.h"
+#include "OffsetStore.h"
+#include "DefaultMQPushConsumer.h"
 
 class DefaultMQPushConsumerImpl;
 

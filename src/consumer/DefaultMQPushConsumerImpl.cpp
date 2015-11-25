@@ -554,8 +554,11 @@ void DefaultMQPushConsumerImpl::start()
 			{
 				m_serviceState = CREATE_JUST;
 				m_pConsumeMessageService->shutdown();
-				std::string str = "The consumer group["+ m_pDefaultMQPushConsumer->getConsumerGroup();
-				str += "] has been created before, specify another name please.";
+
+				std::string str("The consumer group[");
+				str.append(m_pDefaultMQPushConsumer->getConsumerGroup());
+				str.append("] has been created before, specify another name please.");
+
 				THROW_MQEXCEPTION(MQClientException,str,-1);
 			}
 

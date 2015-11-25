@@ -16,16 +16,6 @@
 
 #include "RebalancePushImpl.h"
 
-#include <string.h>
-#include <limits.h>
-
-#include "DefaultMQPushConsumerImpl.h"
-#include "AllocateMessageQueueStrategy.h"
-#include "MQClientFactory.h"
-#include "MessageQueueListener.h"
-#include "OffsetStore.h"
-#include "DefaultMQPushConsumer.h"
-
 RebalancePushImpl::RebalancePushImpl(DefaultMQPushConsumerImpl* pDefaultMQPushConsumerImpl)
 	:RebalanceImpl("",BROADCASTING,NULL,NULL),
 	m_pDefaultMQPushConsumerImpl(pDefaultMQPushConsumerImpl)
