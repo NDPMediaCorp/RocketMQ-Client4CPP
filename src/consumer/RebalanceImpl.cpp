@@ -503,7 +503,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
 	{
 		ProcessQueue* pq = itTmp->second;
 		MessageQueue mq = itTmp->first;
-		pq->setDroped(true);
+		pq->setDropped(true);
 		removeUnnecessaryMessageQueue(mq, *pq);
 		//TODO log.info("doRebalance, {}, remove unnecessary mq, {}",
 		//	consumerGroup, mq);
@@ -578,7 +578,7 @@ void RebalanceImpl::truncateMessageQueueNotMyTopic()
 			ProcessQueue* pq = it->second;
 			if (pq != NULL)
 			{
-				pq->setDroped(true);
+				pq->setDropped(true);
 				//TODO log.info("doRebalance, {}, truncateMessageQueueNotMyTopic remove unnecessary mq, {}",
 				//	consumerGroup, mq);
 			}

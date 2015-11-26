@@ -284,7 +284,7 @@ void DefaultMQPushConsumerImpl::correctTagsOffset(PullRequest& pullRequest)
 void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
 {
 	ProcessQueue* processQueue = pPullRequest->getProcessQueue();
-	if (processQueue->isDroped())
+	if (processQueue->isDropped())
 	{
 		Logger::get_logger()->info("the pull request[{}] is dropped.", pPullRequest->toString());
 		return;

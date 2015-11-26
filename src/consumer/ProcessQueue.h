@@ -58,8 +58,8 @@ public:
 	std::map<long long, MessageExt*> getMsgTreeMap();
 
 	AtomicLong getMsgCount();
-	bool isDroped();
-	void setDroped(bool droped);
+	bool isDropped();
+	void setDropped(bool dropped);
 
 	/**
 	* ========================================================================
@@ -79,7 +79,7 @@ public:
 	* @param batchSize
 	* @return
 	*/
-	std::list<MessageExt*> takeMessags(int batchSize);
+	std::list<MessageExt*> takeMessages(int batchSize);
 
 	long long getLastLockTimestamp();
 	void setLastLockTimestamp(long long lastLockTimestamp);
@@ -93,7 +93,7 @@ private:
 	std::map<long long, MessageExt*> m_msgTreeMap;
 	volatile long long m_queueOffsetMax ;
 	AtomicLong m_msgCount;
-	volatile bool m_droped;// 当前Q是否被rebalance丢弃
+	volatile bool m_dropped;// 当前Q是否被rebalance丢弃
 
 	/**
 	* 顺序消息专用

@@ -349,7 +349,7 @@ void ConsumeOrderlyRequest::Do()
 			long long beginTime = GetCurrentTimeMillis();
 			for (bool continueConsume = true; continueConsume;)
 			{
-				if (m_pProcessQueue->isDroped())
+				if (m_pProcessQueue->isDropped())
 				{
 					//TODO log.info("the message queue not be able to consume, because it's droped {}",
 					//	this.messageQueue);
@@ -384,7 +384,7 @@ void ConsumeOrderlyRequest::Do()
 				int consumeBatchSize = 
 					m_pService->getDefaultMQPushConsumer()->getConsumeMessageBatchMaxSize();
 
-				std::list<MessageExt*> msgs = m_pProcessQueue->takeMessags(consumeBatchSize);
+				std::list<MessageExt*> msgs = m_pProcessQueue->takeMessages(consumeBatchSize);
 				if (!msgs.empty())
 				{
 					ConsumeOrderlyContext context(m_messageQueue);

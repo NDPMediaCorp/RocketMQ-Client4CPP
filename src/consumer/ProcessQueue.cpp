@@ -31,7 +31,7 @@ ProcessQueue::ProcessQueue()
 {
 	m_queueOffsetMax = 0L;
 	m_msgCount=0;
-	m_droped = false;
+	m_dropped = false;
 
 	m_locked = false;
 	m_lastLockTimestamp = GetCurrentTimeMillis();
@@ -144,14 +144,14 @@ AtomicLong ProcessQueue::getMsgCount()
 	return m_msgCount;
 }
 
-bool ProcessQueue::isDroped()
+bool ProcessQueue::isDropped()
 {
-	return m_droped;
+	return m_dropped;
 }
 
-void ProcessQueue::setDroped(bool droped)
+void ProcessQueue::setDropped(bool dropped)
 {
-	m_droped = droped;
+	m_dropped = dropped;
 }
 
 /**
@@ -230,7 +230,7 @@ void ProcessQueue::makeMessageToCosumeAgain(const std::list<MessageExt*>& msgs)
 * @param batchSize
 * @return
 */
-std::list<MessageExt*> ProcessQueue::takeMessags(int batchSize)
+std::list<MessageExt*> ProcessQueue::takeMessages(int batchSize)
 {
 	std::list<MessageExt*> result;
 	try

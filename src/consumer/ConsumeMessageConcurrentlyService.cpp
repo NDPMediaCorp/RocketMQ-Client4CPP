@@ -303,7 +303,7 @@ ConsumeConcurrentlyRequest::~ConsumeConcurrentlyRequest()
 
 void ConsumeConcurrentlyRequest::Do()
 {
-	if (m_pProcessQueue->isDroped())
+	if (m_pProcessQueue->isDropped())
 	{
 		//TODO "the message queue not be able to consume, because it's droped {}",
 		delete this;
