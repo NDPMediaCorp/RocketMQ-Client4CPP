@@ -853,13 +853,12 @@ void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
 			m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
 			break;
 		case OFFSET_ILLEGAL:
-			//TODO 	log.warn("the pull request offset illegal, {} {}",
-			// pullRequest.toString(), pullResult.toString());
+            Logger::get_logger()->warn("The pull request offset is illegal: {}", m_pPullRequest->toString());
 			if (m_pPullRequest->getNextOffset() < pPullResult->minOffset)
 			{
 				m_pPullRequest->setNextOffset(pPullResult->minOffset);
 			}
-			else if (m_pPullRequest->getNextOffset() > pPullResult->maxOffset)
+            else if (m_pPullRequest->getNextOffset() > pPullResult->maxOffset)
 			{
 				m_pPullRequest->setNextOffset(pPullResult->maxOffset);
 			}
@@ -867,7 +866,7 @@ void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
 			m_pDefaultMQPushConsumerImpl->m_pOffsetStore->updateOffset(
 				*m_pPullRequest->getMessageQueue(), m_pPullRequest->getNextOffset(), false);
 
-			// log.warn("fix the pull request offset, {}", pullRequest);
+            Logger::get_logger()->warn("Fix the pull request offset: {}", m_pPullRequest->toString());
 			m_pDefaultMQPushConsumerImpl->executePullRequestImmediately(m_pPullRequest);
 			break;
 		default:
@@ -883,7 +882,7 @@ void DefaultMQPushConsumerImplCallback::onException(MQException& e)
 	std::string topic = m_pPullRequest->getMessageQueue()->getTopic();
 	if (topic.find(MixAll::RETRY_GROUP_TOPIC_PREFIX)!=std::string::npos)
 	{
-		//log.warn("execute the pull request exception", e);
+        Logger::get_logger()->warn("Execute the pull request failed: {}", e.what());
 	}
 
 	m_pDefaultMQPushConsumerImpl->executePullRequestLater(m_pPullRequest,
