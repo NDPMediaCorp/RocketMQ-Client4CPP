@@ -449,7 +449,7 @@ void TcpRemotingClient::processResponseCommand(RemotingCommand* pCmd)
 	}
 	else
 	{
-		//TODO 没找到，丢弃？ 需要记录日志
+		Logger::get_logger()->warn("Unable to find request[opaque = {}]", pCmd->getOpaque());
 		delete pCmd;
 	}
 }

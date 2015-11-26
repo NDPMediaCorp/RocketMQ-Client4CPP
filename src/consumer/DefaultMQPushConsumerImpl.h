@@ -20,6 +20,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <chrono>
 
 #include "MQConsumerInner.h"
 #include "MessageExt.h"
@@ -29,6 +30,29 @@
 #include "ConsumeMessageHook.h"
 #include "MixAll.h"
 #include "Logger.h"
+#include "DefaultMQPushConsumer.h"
+#include "ConsumerStatManage.h"
+#include "DefaultMQPullConsumer.h"
+#include "DefaultMQProducer.h"
+#include "MQClientFactory.h"
+#include "MQAdminImpl.h"
+#include "RebalancePushImpl.h"
+#include "MQClientAPIImpl.h"
+#include "OffsetStore.h"
+#include "MQClientManager.h"
+#include "LocalFileOffsetStore.h"
+#include "RemoteBrokerOffsetStore.h"
+#include "PullSysFlag.h"
+#include "FilterAPI.h"
+#include "PullAPIWrapper.h"
+#include "MQClientException.h"
+#include "Validators.h"
+#include "MessageListener.h"
+#include "PullMessageService.h"
+#include "ConsumeMessageOrderlyService.h"
+#include "ConsumeMessageConcurrentlyService.h"
+#include "KPRUtil.h"
+
 
 class DefaultMQPushConsumer;
 class ConsumeMessageHook;
@@ -178,7 +202,7 @@ private:
 	SubscriptionData m_subscriptionData;
 	DefaultMQPushConsumerImpl* m_pDefaultMQPushConsumerImpl;
 	PullRequest* m_pPullRequest;
-	unsigned long long m_beginTimestamp;
+	std::chrono::system_clock::time_point m_beginTimestamp;
 };
 
 #endif

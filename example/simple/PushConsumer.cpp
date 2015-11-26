@@ -16,16 +16,6 @@
 #include <PullResult.h>
 #include <MQClientException.h>
 
-long long str2ll( const char *str )
-{
-#ifdef WIN32
-	return _atoi64(str);
-#else
-	return atoll(str);
-#endif
-
-}
-
 class MsgListener : public MessageListenerConcurrently
 {
 public:
@@ -47,7 +37,7 @@ public:
 		long long offset = msg->getQueueOffset();
 		std::string maxOffset = msg->getProperty(Message::PROPERTY_MAX_OFFSET);
 
-		long long diff = str2ll(maxOffset.c_str()) - offset;
+		long long diff = std::stoll(maxOffset) - offset;
 
 		if (diff > 100000)
 		{

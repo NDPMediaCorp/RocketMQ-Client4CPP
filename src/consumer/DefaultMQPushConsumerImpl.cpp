@@ -16,34 +16,6 @@
 
 #include "DefaultMQPushConsumerImpl.h"
 
-#include <string>
-#include <set>
-
-#include "DefaultMQPushConsumer.h"
-#include "ConsumerStatManage.h"
-#include "DefaultMQPullConsumer.h"
-#include "DefaultMQProducer.h"
-#include "MQClientFactory.h"
-#include "MQAdminImpl.h"
-#include "RebalancePushImpl.h"
-#include "MQClientAPIImpl.h"
-#include "OffsetStore.h"
-#include "MixAll.h"
-#include "MQClientManager.h"
-#include "LocalFileOffsetStore.h"
-#include "RemoteBrokerOffsetStore.h"
-#include "PullSysFlag.h"
-#include "FilterAPI.h"
-#include "PullAPIWrapper.h"
-#include "MQClientException.h"
-#include "Validators.h"
-#include "MessageListener.h"
-#include "ConsumeMessageHook.h"
-#include "PullMessageService.h"
-#include "ConsumeMessageOrderlyService.h"
-#include "ConsumeMessageConcurrentlyService.h"
-#include "KPRUtil.h"
-
 // 拉消息异常时，延迟一段时间再拉
 long long DefaultMQPushConsumerImpl::s_PullTimeDelayMillsWhenException = 3000;
 long long DefaultMQPushConsumerImpl::s_PullTimeDelayMillsWhenFlowControl = 100;
@@ -821,7 +793,7 @@ DefaultMQPushConsumerImplCallback::DefaultMQPushConsumerImplCallback(Subscriptio
 	m_pDefaultMQPushConsumerImpl(pDefaultMQPushConsumerImpl),
 	m_pPullRequest(pPullRequest)
 {
-	m_beginTimestamp = GetCurrentTimeMillis();
+	m_beginTimestamp = std::chrono::system_clock::now();
 }
 
 void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
@@ -838,12 +810,13 @@ void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
 		case FOUND:
 			{
 				m_pPullRequest->setNextOffset(pPullResult->nextBeginOffset);
-				//TODO 这个时间可能需要调整，目前windows下只支持32位
-				long long pullRT = GetCurrentTimeMillis() - m_beginTimestamp;
+				std::chrono::system_clock::time_point current = std::chrono::system_clock::now();
+				std::chrono::system_clock::duration pullRT =
+						std::chrono::duration_cast<std::chrono::milliseconds>(current - m_beginTimestamp);
 				m_pDefaultMQPushConsumerImpl->getConsumerStatManager()->getConsumertat()
 					.pullTimesTotal++;
 				m_pDefaultMQPushConsumerImpl->getConsumerStatManager()->getConsumertat()
-					.pullRTTotal.fetchAndAdd(pullRT);
+					.pullRTTotal.fetchAndAdd(pullRT.count());
 
 				ProcessQueue* processQueue= m_pPullRequest->getProcessQueue();
 				bool dispathToConsume = processQueue->putMessage(pPullResult->msgFoundList);
@@ -900,6 +873,8 @@ void DefaultMQPushConsumerImplCallback::onSuccess(PullResult& pullResult)
 		default:
 			break;
 		}
+	} else {
+		Logger::get_logger()->warn("Warning: PullRequest is null!");
 	}
 }
 
