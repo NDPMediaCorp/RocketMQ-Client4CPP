@@ -568,9 +568,11 @@ void DefaultMQPushConsumerImpl::checkConfig()
 	// consumerGroup
 	if (m_pDefaultMQPushConsumer->getConsumerGroup()==MixAll::DEFAULT_CONSUMER_GROUP)
 	{
-		THROW_MQEXCEPTION(MQClientException,"consumerGroup can not equal "
-			+ MixAll::DEFAULT_CONSUMER_GROUP //
-			+ ", please specify another one.",-1);
+        std::string msg("consumerGroup can not equal to ");
+        msg.append(MixAll::DEFAULT_CONSUMER_GROUP)
+           .append(", please specify another one.");
+        Logger::get_logger()->error(msg);
+		THROW_MQEXCEPTION(MQClientException, msg,-1);
 	}
 
 	if (m_pDefaultMQPushConsumer->getMessageModel()!=BROADCASTING
@@ -599,9 +601,11 @@ void DefaultMQPushConsumerImpl::checkConfig()
 	//}
 
 	// messageListener
-	if (m_pDefaultMQPushConsumer->getMessageListener()==NULL)
+	if (m_pDefaultMQPushConsumer->getMessageListener() == NULL)
 	{
-		THROW_MQEXCEPTION(MQClientException,"messageListener is null",-1);
+        std::string msg("messageListener is null");
+        Logger::get_logger()->error(msg);
+		THROW_MQEXCEPTION(MQClientException, msg, -1);
 	}
 
 	MessageListener* listener = m_pDefaultMQPushConsumer->getMessageListener();
