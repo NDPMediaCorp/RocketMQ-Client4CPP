@@ -19,6 +19,7 @@
 #include "ServiceThread.h"
 #include <list>
 #include "TimerThread.h"
+#include "Logger.h"
 
 class MQClientFactory;
 class MQConsumerInner;

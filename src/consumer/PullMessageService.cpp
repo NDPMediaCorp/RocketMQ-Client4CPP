@@ -128,6 +128,6 @@ void PullMessageService::pullMessage(PullRequest* pPullRequest)
 	}
 	else
 	{
-		//TODO
+		Logger::get_logger()->error("Unable to find consumer instance from MQClientFactory");
 	}
 }

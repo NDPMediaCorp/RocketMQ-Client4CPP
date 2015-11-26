@@ -60,6 +60,16 @@ void MessageQueue::setQueueId(int queueId)
 	m_queueId = queueId;
 }
 
+std::string MessageQueue::toString() {
+	std::string s;
+	s.append("{")
+			.append("Topic:").append(m_topic)
+			.append(", BrokerName: ").append(m_brokerName)
+			.append(", QueueId: ").append(std::to_string(m_queueId))
+	  .append("}");
+	return s;
+}
+
 int MessageQueue::hashCode()
 {
 	// final int prime = 31;

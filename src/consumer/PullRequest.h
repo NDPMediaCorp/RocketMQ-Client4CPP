@@ -37,7 +37,9 @@ public:
 	void setMessageQueue(MessageQueue* pMessageQueue);
 
 	long long getNextOffset();
+
 	void setNextOffset(long long nextOffset);
+
 	std::string toString();
 
 	int hashCode();

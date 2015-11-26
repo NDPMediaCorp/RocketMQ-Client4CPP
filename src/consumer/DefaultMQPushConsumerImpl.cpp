@@ -286,7 +286,7 @@ void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
 	ProcessQueue* processQueue = pPullRequest->getProcessQueue();
 	if (processQueue->isDroped())
 	{
-		//TODO log.info("the pull request[{}] is droped.", pPullRequest->toString());
+		Logger::get_logger()->info("the pull request[{}] is dropped.", pPullRequest->toString());
 		return;
 	}
 
