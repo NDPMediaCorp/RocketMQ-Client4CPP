@@ -97,6 +97,7 @@ MQClientFactory::~MQClientFactory()
 
 void MQClientFactory::start()
 {
+	Logger::get_logger()->info("Starting MQClientFactory");
 	kpr::ScopedLock<kpr::Mutex> lock(m_mutex);
 	switch (m_serviceState)
 	{
@@ -116,15 +117,17 @@ void MQClientFactory::start()
 		m_pRebalanceService->Start();
 
 		m_pDefaultMQProducer->getDefaultMQProducerImpl()->start(false);
-		
-
 		m_serviceState = RUNNING;
+		Logger::get_logger()->info("MQClientFactory started");
 		break;
 	case RUNNING:
+		Logger::get_logger()->warn("MQClientFactory is already running.");
 		break;
 	case SHUTDOWN_ALREADY:
+		Logger::get_logger()->error("MQClientFactory should have already been shutted down");
 		break;
 	case START_FAILED:
+		Logger::get_logger()->error("MQClientFactory started failed.");
 		THROW_MQEXCEPTION(MQClientException,"The Factory object start failed",-1);
 	default:
 		break;
@@ -915,7 +918,7 @@ void MQClientFactory::fetchNameServerAddr()
 
 void MQClientFactory::updateTopicRouteInfoFromNameServerTask()
 {
-	//10, m_clientConfig.getPollNameServerInteval()
+	//10, m_clientConfig.getPollNameServerInterval()
 	try
 	{
 		updateTopicRouteInfoFromNameServer();
@@ -984,7 +987,7 @@ void MQClientFactory::startScheduledTask()
 	m_scheduledTaskIds[0] = m_timerTaskManager.RegisterTimer(1000 * 10, 1000 * 60 * 2,m_pFetchNameServerAddr);
 
 	// 定时从Name Server获取Topic路由信息
-	m_scheduledTaskIds[1] = m_timerTaskManager.RegisterTimer(10, m_clientConfig.getPollNameServerInteval(),m_pUpdateTopicRouteInfoFromNameServerTask);
+	m_scheduledTaskIds[1] = m_timerTaskManager.RegisterTimer(10, m_clientConfig.getPollNameServerInterval(), m_pUpdateTopicRouteInfoFromNameServerTask);
 
 	// 定时清理下线的Broker
 	// 向所有Broker发送心跳信息（包含订阅关系等）

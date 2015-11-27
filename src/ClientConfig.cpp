@@ -22,6 +22,9 @@
 #include "UtilAll.h"
 #include "MixAll.h"
 
+
+const std::string ClientConfig::CLIENT_ID_IP_NAME_SEPARATOR = "@";
+
 ClientConfig::ClientConfig()
 {
 	char* addr = getenv(MixAll::NAMESRV_ADDR_ENV.c_str());
@@ -37,7 +40,7 @@ ClientConfig::ClientConfig()
 	m_clientIP = getLocalAddress();
 	m_instanceName = "DEFAULT";
 	m_clientCallbackExecutorThreads = UtilAll::availableProcessors();
-	m_pollNameServerInteval = 1000 * 30;
+	m_pollNameServerInterval = 1000 * 30;
 	m_heartbeatBrokerInterval = 1000 * 30;
 	m_persistConsumerOffsetInterval = 1000 * 5;
 }
@@ -48,7 +51,7 @@ ClientConfig::~ClientConfig()
 
 std::string ClientConfig::buildMQClientId()
 {
-	return m_clientIP+"@"+m_instanceName;
+	return m_clientIP + CLIENT_ID_IP_NAME_SEPARATOR + m_instanceName;
 }
 
 void ClientConfig::resetClientConfig(const ClientConfig& cc)
@@ -57,7 +60,7 @@ void ClientConfig::resetClientConfig(const ClientConfig& cc)
 	m_clientIP = cc.m_clientIP;
 	m_instanceName = cc.m_instanceName;
 	m_clientCallbackExecutorThreads = cc.m_clientCallbackExecutorThreads;
-	m_pollNameServerInteval = cc.m_pollNameServerInteval;
+	m_pollNameServerInterval = cc.m_pollNameServerInterval;
 	m_heartbeatBrokerInterval = cc.m_heartbeatBrokerInterval;
 	m_persistConsumerOffsetInterval = cc.m_persistConsumerOffsetInterval;
 }
@@ -107,14 +110,14 @@ void ClientConfig::setClientCallbackExecutorThreads(int clientCallbackExecutorTh
 	m_clientCallbackExecutorThreads = clientCallbackExecutorThreads;
 }
 
-int ClientConfig::getPollNameServerInteval()
+int ClientConfig::getPollNameServerInterval()
 {
-	return m_pollNameServerInteval;
+	return m_pollNameServerInterval;
 }
 
-void ClientConfig::setPollNameServerInteval(int pollNameServerInteval)
+void ClientConfig::setPollNameServerInterval(int pollNameServerInterval)
 {
-	m_pollNameServerInteval = pollNameServerInteval;
+	m_pollNameServerInterval = pollNameServerInterval;
 }
 
 int ClientConfig::getHeartbeatBrokerInterval()

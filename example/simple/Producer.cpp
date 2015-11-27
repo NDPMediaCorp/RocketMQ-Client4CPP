@@ -6,6 +6,8 @@
 #include <string.h>
 #include <string>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 #ifdef WIN32
 #   include <sys/timeb.h>
@@ -23,16 +25,8 @@
 #include <SendResult.h>
 #include <MQClientException.h>
 
-void MySleep(long millis) {
-
-#ifdef WIN32
-    ::Sleep(millis);
-#else
-    struct timespec tv;
-    tv.tv_sec = millis / 1000;
-    tv.tv_nsec = (millis % 1000) * 1000000;
-    nanosleep(&tv, 0);
-#endif
+inline void MySleep(long millis) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 }
 
 void Usage(const char *program) {

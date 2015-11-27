@@ -49,8 +49,9 @@ public:
 	int getClientCallbackExecutorThreads();
 	void setClientCallbackExecutorThreads(int clientCallbackExecutorThreads);
 
-	int getPollNameServerInteval();
-	void setPollNameServerInteval(int pollNameServerInteval);
+	int getPollNameServerInterval();
+
+	void setPollNameServerInterval(int pollNameServerInterval);
 
 	int getHeartbeatBrokerInterval();
 	void setHeartbeatBrokerInterval(int heartbeatBrokerInterval);
@@ -60,12 +61,13 @@ public:
 
 private:
 	int m_clientCallbackExecutorThreads;
-	int m_pollNameServerInteval;
+	int m_pollNameServerInterval;
 	int m_heartbeatBrokerInterval;
 	int m_persistConsumerOffsetInterval;
 	std::string m_namesrvAddr;
 	std::string m_clientIP;
 	std::string m_instanceName;
+	static const std::string CLIENT_ID_IP_NAME_SEPARATOR;
 };
 
 #endif

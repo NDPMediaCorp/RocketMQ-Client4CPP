@@ -99,6 +99,7 @@ void DefaultMQProducerImpl::start()
 
 void DefaultMQProducerImpl::start(bool startFactory)
 {
+	Logger::get_logger()->info("Starting DefaultMQProducerImpl");
 	switch (m_serviceState)
 	{
 	case CREATE_JUST:
@@ -113,9 +114,11 @@ void DefaultMQProducerImpl::start(bool startFactory)
 		if (!registerOK)
 		{
 			m_serviceState = CREATE_JUST;
-
-			THROW_MQEXCEPTION(MQClientException,"The producer group[" + m_pDefaultMQProducer->getProducerGroup()
-							  + "] has been created before, specify another name please.",-1);
+			std::string msg("The producer group[");
+			msg.append(m_pDefaultMQProducer->getProducerGroup())
+			   .append("] has been created before, specify another name please.");
+			Logger::get_logger()->error(msg);
+			THROW_MQEXCEPTION(MQClientException, msg, -1);
 		}
 
 		// Ä¬ÈÏTopic×¢²á
@@ -127,11 +130,17 @@ void DefaultMQProducerImpl::start(bool startFactory)
 		}
 
 		m_serviceState = RUNNING;
+		Logger::get_logger()->info("DefaultMQProducerImpl started.");
 	}
 	break;
 	case RUNNING:
+		Logger::get_logger()->error("This client is already running.");
+		THROW_MQEXCEPTION(MQClientException,"The producer service state not OK, maybe started once, ",-1);
 	case START_FAILED:
+		Logger::get_logger()->error("This client failed to start previously.");
+		THROW_MQEXCEPTION(MQClientException,"The producer service state not OK, maybe started once, ",-1);
 	case SHUTDOWN_ALREADY:
+		Logger::get_logger()->error("This client has been shutted down.");
 		THROW_MQEXCEPTION(MQClientException,"The producer service state not OK, maybe started once, ",-1);
 	default:
 		break;
