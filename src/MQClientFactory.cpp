@@ -943,13 +943,12 @@ void MQClientFactory::cleanBroker()
 void MQClientFactory::persistAllConsumerOffsetTask()
 {
 	//1000 * 10, m_clientConfig.getPersistConsumerOffsetInterval()
-	try
-	{
+	try {
+		Logger::get_logger()->info("Begin to persist consumer offsets.");
 		persistAllConsumerOffset();
-	}
-	catch (...)
-	{
-
+		Logger::get_logger()->info("All consumer offsets persisted.");
+	} catch (...) {
+		Logger::get_logger()->error("Failed to persist consumer offsets");
 	}
 }
 

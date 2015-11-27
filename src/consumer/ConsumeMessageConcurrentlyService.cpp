@@ -205,8 +205,7 @@ void ConsumeMessageConcurrentlyService::processConsumeResult( ConsumeConcurrentl
 
 		for (; it != msgs.end(); it++)
 		{
-			//MessageExt msg = consumeRequest.getMsgs().get(i);
-			//TODO log.warn("BROADCASTING, the message consume failed, drop it, {}", msg.toString());
+			Logger::get_logger()->warn("BROADCASTING, the message consume failed, drop it, MsgId: {}", (*it)->getMsgId());
 		}
 		break;
 	case CLUSTERING:
