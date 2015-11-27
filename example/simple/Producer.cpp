@@ -37,7 +37,7 @@ void Usage(const char *program) {
 }
 
 int main(int argc, char *argv[]) {
-    int count = 1000;
+    int count = 1;
     int size = 32;
     std::string* name_server_list = nullptr;
 
@@ -84,37 +84,16 @@ int main(int argc, char *argv[]) {
     std::string tags[] = {"TagA", "TagB", "TagC", "TagD", "TagE"};
 
     char key[16];
-    char *value = new char[size];
-
-    strcpy(value, "Hello RocketMQ");
-
-    for (int i = 14; i < size - 8; i++) {
-        char ch;
-        switch (i % 3) {
-            case 0:
-                ch = 'a';
-                break;
-            case 1:
-                ch = 'b';
-                break;
-            case 2:
-            default:
-                ch = 'c';
-                break;
-        }
-
-        *(value + i) = ch;
-    }
+    std::string value("Hello Cpp Client");
 
     for (int i = 0; i < count; i++) {
         try {
             sprintf(key, "KEY%d", i);
-            sprintf(value + size - 8, "%d", i);
             Message msg("TopicTest",// topic
                         tags[i % 5],// tag
                         key,// key
-                        value,// body
-                        strlen(value) + 1);
+                        value.c_str(),// body
+                        value.size());
             SendResult sendResult = producer.send(msg);
             // MySleep(100);
             printf("sendresult=%d,msgid=%s\n", sendResult.getSendStatus(), sendResult.getMsgId().c_str());

@@ -51,7 +51,11 @@ public:
 		{
 			MessageExt* me = *it;
 			std::string str;
-			str.assign(me->getBody(),me->getBodyLen());
+			str.append("MsgId: ").append(me->getMsgId())
+			   .append(", Topic: ").append(me->getTopic())
+			   .append(", Broker: ").append(me->getBornHostString());
+			std::string body(me->getBody(), me->getBodyLen());
+			str.append(", Body: ").append(body);
 			std::cout<<str<<std::endl;
 		}
 
