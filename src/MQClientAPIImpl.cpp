@@ -1114,8 +1114,6 @@ SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
 	std::string remark = pResponse->getRemark();
 	int repCode = pResponse->getCode();
 
-	delete pResponse;
-
 	THROW_MQEXCEPTION(MQClientException, remark, repCode);
 	return NULL;
 }
