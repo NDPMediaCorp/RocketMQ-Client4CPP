@@ -1105,8 +1105,6 @@ SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
 			SendResult* ret = new SendResult(sendStatus, responseHeader->msgId, messageQueue,
 				responseHeader->queueOffset, m_projectGroupPrefix);
 
-			delete pResponse;
-
 			return ret;
 		}
 	default:
